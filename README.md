@@ -1,27 +1,56 @@
-# 📸 Full Page Shot
+<p align="center">
+  <img src="assets/banner.svg" alt="Full Page Shot" width="100%"/>
+</p>
 
-> Extensión para **Microsoft Edge** que captura **toda la página**, por larga que sea, y la guarda como **PNG** o **JPEG**. Escrita en **TypeScript** y empaquetada con **esbuild**.
+<p align="center">
+  <a href="https://github.com/AlbertoVasquezR/full-page-shot"><img src="https://img.shields.io/github/stars/AlbertoVasquezR/full-page-shot?style=social" alt="GitHub stars"/></a>
+  <a href="https://github.com/AlbertoVasquezR/full-page-shot/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-047857?style=flat-square" alt="MIT License"/></a>
+  <img src="https://img.shields.io/badge/Manifest-V3-4f46e5?style=flat-square" alt="Manifest V3"/>
+  <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/bundler-esbuild-ffcf00?style=flat-square" alt="esbuild"/>
+  <img src="https://img.shields.io/badge/browser-Microsoft%20Edge-0078d4?style=flat-square&logo=microsoftedge&logoColor=white" alt="Microsoft Edge"/>
+</p>
 
-[![Manifest V3](https://img.shields.io/badge/Manifest-V3-4f46e5?style=flat-square)](#)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white)](#)
-[![esbuild](https://img.shields.io/badge/bundler-esbuild-ffcf00?style=flat-square)](#)
-[![Edge](https://img.shields.io/badge/browser-Microsoft%20Edge-0078d4?style=flat-square&logo=microsoftedge&logoColor=white)](#)
+<p align="center">
+  <strong>Captura toda la página, por larga que sea, en un solo clic.</strong><br/>
+  <sub>PNG o JPEG · Portapapeles · Carpeta de destino · Modo automático inteligente</sub>
+</p>
+
+<p align="center">
+  <a href="#-instalación">Instalación</a> ·
+  <a href="#-uso">Uso</a> ·
+  <a href="#-características">Características</a> ·
+  <a href="#-problemas-frecuentes">FAQ</a> ·
+  <a href="#-licencia">Licencia</a>
+</p>
 
 ---
 
-## ✨ Qué hace
+## 🎯 ¿Qué es Full Page Shot?
 
-- 📄 **Captura completa real** con `Page.captureScreenshot` + `captureBeyondViewport`. Una sola imagen, sin costuras.
+Una extensión para **Microsoft Edge** que captura la **página completa** (todo el scroll, sin importar la longitud) y la guarda como **PNG** o **JPEG**. Escrita en **TypeScript** y empaquetada con **esbuild**.
+
+A diferencia de las capturas normales del navegador, que solo toman lo visible, Full Page Shot usa el **Chrome DevTools Protocol** para renderizar la página a su tamaño real y devolver **una sola imagen sin costuras**. Y cuando el contenido solo aparece al desplazarse, detecta el caso y recorre la página pantalla a pantalla.
+
+---
+
+## ✨ Características
+
+### Captura
+- 📄 **Captura completa real** con `Page.captureScreenshot` + `captureBeyondViewport`.
 - 🧠 **Modo Automático** (por defecto): analiza la página y decide si conviene recorrerla por scroll. Detecta carga diferida, `content-visibility: auto`, animaciones de entrada, contenedores con scroll interno, listas virtualizadas, iframes pesados, scroll-snap, parallax, imágenes de fondo diferidas y cambios por `IntersectionObserver`.
 - 📜 **Modo Por scroll**: baja la vista pantalla a pantalla y une las capturas. Para contenido que solo aparece al desplazarse.
 - ⚡ **Modo Rápido**: una sola pasada, sin desplazar la página.
 - 👁️ **Modo Visible**: captura solo lo que se ve ahora (ideal para estados con hover o menús abiertos).
 - 📏 **Páginas gigantes**: si superan el límite de la GPU se capturan por segmentos y se unen en un lienzo, con reducción automática si hace falta (etiqueta `reducida`).
 - 🐢 **Carga diferida (lazy loading)**: opción para recorrer la página antes de capturar en modo rápido.
-- ♾️ **Scroll infinito**: opción para seguir capturando mientras la página siga creciendo (feeds, listas).
-- 🎨 **Repintado previo**: mejora la captura de Canvas/WebGL y animaciones.
-- 🧹 **Preparación de la página**: espera a que carguen las fuentes, pausa animaciones/transiciones, fuerza `content-visibility: visible` y elimina `contain` que podría ocultar contenido, antes de capturar. Todo se restaura al terminar.
+- ♾️ **Scroll infinito**: opción para seguir capturando mientras la página siga creciendo (feeds, listas que cargan más al bajar).
 - 🍪 **Cierre de banners de cookies** antes de capturar (OneTrust, Cookiebot, Didomi, Quantcast…).
+- 🧹 **Preparación de la página**: espera fuentes, pausa animaciones/transiciones, fuerza `content-visibility: visible` y elimina `contain` que podría ocultar contenido. Todo se restaura al terminar.
+- 🎨 **Repintado previo**: mejora la captura de Canvas/WebGL y animaciones.
+- 📐 **Páginas con scroll interno**: detecta y recorre contenedores desplazables (paneles con `html { overflow: hidden }`).
+
+### Salida
 - 🖼️ **PNG y JPEG** con control de calidad.
 - 📋 **Copiar al portapapeles** como imagen real (no texto ni HTML).
 - 📁 **Carpeta de destino**: subcarpeta dentro de Descargas o diálogo nativo de Windows.
@@ -97,6 +126,8 @@ Tras cambiar código hay que pulsar **Recargar** en `edge://extensions/`.
 
 ```
 full-page-shot/
+├── assets/
+│   └── banner.svg          banner del README
 ├── public/                 recursos estáticos (se copian tal cual a dist/)
 │   ├── manifest.json       Manifest V3
 │   ├── popup.html/.css     interfaz del botón
@@ -114,7 +145,10 @@ full-page-shot/
 │   ├── settings.ts         lectura/escritura de preferencias
 │   ├── types.ts            tipos y mensajes compartidos
 │   └── util.ts             base64, nombres de archivo, formato de tamaños
-├── tools/make-icons.mjs    generador de iconos (PNG propio, sin librerías)
+├── tools/
+│   ├── make-icons.mjs      generador de iconos (PNG propio, sin librerías)
+│   ├── smoke-test.mjs      prueba de extremo a extremo
+│   └── verify-clipboard.mjs verificación del portapapeles
 ├── build.mjs               script de esbuild + copia de estáticos
 └── tsconfig.json
 ```
@@ -130,6 +164,8 @@ full-page-shot/
 | `storage` | Guardar tus preferencias (`storage.sync`). |
 | `clipboardWrite` | Copiar la imagen al portapapeles sin pedir gesto en cada captura. |
 | `notifications` | Avisarte cuando termina. |
+| `activeTab` | Respaldo de captura para páginas restringidas. |
+| `scripting` | Inyectar scripts de preparación (cookies, fuentes, etc.). |
 
 **No pide acceso a sitios web** (`host_permissions`): la URL y el título se leen por el
 protocolo DevTools, no inyectando código.
@@ -139,15 +175,15 @@ protocolo DevTools, no inyectando código.
 ## ⚠️ Límites reales (esto no lo puede saltar ninguna extensión)
 
 - **Páginas internas y PDFs**: cuando el depurador está bloqueado, la extensión intenta al menos una captura de la vista visible con `chrome.tabs.captureVisibleTab` (requiere hacer clic en el icono sobre esa página). No es captura completa, pero evita quedarse sin nada. También reintenta automáticamente si una captura falla.
+- **PDFs** abiertos en el visor interno: bloqueado por Edge; respaldo de vista visible.
 - **Contenido de iframes de otros dominios** puede salir en blanco.
-- **Canvas/WebGL** a veces no se renderiza en la captura.
+- **Canvas/WebGL**: mejorado con repintado previo, pero algunos contextos no se renderizan.
 - **DevTools abierto** en la misma pestaña: solo se admite un depurador a la vez. Ciérralo.
 - **Políticas de empresa** pueden bloquear la captura (`Screenshot capture is restricted by policy`).
 - **Captura de una sola toma**: `chrome.debugger` rechaza capturas de más de ~16 000 px de alto, así que las páginas más largas se capturan **por segmentos** y se unen.
 - **Páginas de más de ~30 000 px de alto**: se reducen proporcionalmente para caber en el lienzo del navegador (la etiqueta `reducida` lo indica).
 - **Copiar al portapapeles** necesita una página de la extensión con foco; si cierras el popup durante la captura, se usa una ventana auxiliar.
 - **Modo por scroll**: más lento (una captura por pantalla). Por defecto se detiene al final que tenía la página al empezar; con **Seguir el scroll infinito** activado, sigue capturando mientras la página siga creciendo (feeds, listas que cargan más al bajar), con un tope de seguridad. Captura fielmente lo que solo aparece al desplazarse.
-- **Canvas/WebGL**: se fuerza un repintado antes de capturar (activado por defecto) para mejorar la captura de gráficos y animaciones.
 - **Páginas con scroll interno**: algunas aplicaciones (paneles con `html { overflow: hidden }` y el contenido desplazándose dentro del `body` o de un contenedor) se capturan midiendo y recorriendo ese contenedor.
 
 ---
@@ -157,7 +193,7 @@ protocolo DevTools, no inyectando código.
 | Síntoma | Solución |
 | --- | --- |
 | "Ya hay un depurador conectado" | Cierra DevTools (F12) en esa pestaña. |
-| "Edge no permite capturar esta página" | Estás en una página interna. Usa una web normal. |
+| "Edge no permite capturar esta página" | Estás en una página interna. Usa una web normal o haz clic en el icono sobre esa página para al menos capturar la vista visible. |
 | La captura sale en blanco | Activa *Recorrer la página antes de capturar* en Opciones. |
 | Faltan bloques o salen repetidos | Cambia el **recorrido** a *Por scroll* (contenido que solo aparece al bajar). |
 | Cambié el código y no pasa nada | Pulsa **Recargar** en `edge://extensions/`. |
@@ -169,3 +205,9 @@ protocolo DevTools, no inyectando código.
 Este proyecto se distribuye bajo la **licencia MIT**, es decir, uso libre: puedes usarlo, copiarlo, modificarlo, fusionarlo, publicarlo, distribuirlo, sublicenciarlo y/o venderlo, siempre que mantengas el aviso de copyright y la licencia. Consulta el archivo [`LICENSE`](./LICENSE) para el texto completo.
 
 Las dependencias (esbuild, typescript, @types/chrome, puppeteer-core) se rigen por sus propias licencias.
+
+---
+
+<p align="center">
+  <sub>Hecho con ☕ para capturar páginas largas sin complicaciones.</sub>
+</p>
