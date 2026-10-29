@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Opciones · Full Page Shot</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="head">
+        <img src="icons/icon48.png" alt="" width="40" height="40" />
+        <div>
+          <h1>Opciones de Full Page Shot</h1>
+          <p>Cómo y dónde se guardan tus capturas de página completa.</p>
+        </div>
+      </header>
+
+      <section class="panel">
+        <h2>Guardado</h2>
+
+        <label class="field">
+          <span class="field__label">Subcarpeta dentro de Descargas</span>
+          <input id="subfolder" type="text" placeholder="FullPageShot" spellcheck="false" />
+          <span class="field__hint">Se crea sola. Déjalo vacío para guardar en la raíz de Descargas.</span>
+        </label>
+
+        <label class="check">
+          <input id="askWhere" type="checkbox" />
+          <span>
+            Preguntar dónde guardar en cada captura
+            <em>Abre el diálogo nativo de Windows, donde sí puedes elegir cualquier carpeta.</em>
+          </span>
+        </label>
+
+        <p class="preview">Ejemplo: <code id="preview"></code></p>
+      </section>
+
+      <section class="panel">
+        <h2>Imagen</h2>
+
+        <div class="field">
+          <span class="field__label">Formato por defecto</span>
+          <div id="formatGroup" class="segmented" role="group" aria-label="Formato de imagen">
+            <button type="button" class="seg" data-format="png">PNG</button>
+            <button type="button" class="seg" data-format="jpeg">JPEG</button>
+          </div>
+          <span class="field__hint">PNG no pierde calidad. JPEG pesa menos en páginas larguísimas.</span>
+        </div>
+
+        <div id="qualityField" class="field" hidden>
+          <label class="field__label" for="quality">Calidad JPEG · <output id="qualityValue">92</output></label>
+          <input id="quality" class="range" type="range" min="40" max="100" step="1" value="92" />
+        </div>
+
+        <label class="check">
+          <input id="copyToggle" type="checkbox" />
+          <span>Copiar también al portapapeles</span>
+        </label>
+      </section>
+
+      <section class="panel">
+        <h2>Comportamiento</h2>
+
+        <div class="field">
+          <span class="field__label">Método de captura</span>
+          <div id="modeGroup" class="segmented" role="group" aria-label="Método de captura">
+            <button type="button" class="seg" data-mode="auto">Automático</button>
+            <button type="button" class="seg" data-mode="fast">Rápido</button>
+            <button type="button" class="seg" data-mode="scroll">Por scroll</button>
+            <button type="button" class="seg" data-mode="visible">Visible</button>
+          </div>
+          <span class="field__hint">
+            «Automático» decide solo. «Rápido» toma la página entera de una pasada. «Por scroll» recorre la vista paso a paso, para páginas cuyo contenido solo aparece al bajar (carga diferida, listas virtualizadas). Es más lento.
+          </span>
+        </div>
+
+        <label class="check">
+          <input id="lazyLoad" type="checkbox" />
+          <span>
+            Recorrer la página antes de capturar
+            <em>Fuerza la carga de imágenes con carga diferida. Más lento, pero la captura sale completa.</em>
+          </span>
+        </label>
+
+        <label class="check">
+          <input id="dismissCookies" type="checkbox" />
+          <span>
+            Cerrar banners de cookies antes de capturar
+            <em>Intenta pulsar "Aceptar" en los consentimientos más comunes (OneTrust, Cookiebot, Didomi…).</em>
+          </span>
+        </label>
+
+        <div class="field">
+          <label class="field__label" for="captureDelay">Retardo antes de capturar · <output id="captureDelayValue">0</output> s</label>
+          <input id="captureDelay" class="range" type="range" min="0" max="10" step="1" value="0" />
+          <span class="field__hint">Útil para capturar menús desplegados o estados con hover.</span>
+        </div>
+
+        <label class="check">
+          <input id="notify" type="checkbox" />
+          <span>Avisarme con una notificación al terminar</span>
+        </label>
+      </section>
+
+      <footer class="actions">
+        <button id="save" class="primary" type="button">Guardar cambios</button>
+        <button id="reset" class="ghost" type="button">Restaurar valores por defecto</button>
+        <span id="saved" class="saved">Guardado ✓</span>
+      </footer>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

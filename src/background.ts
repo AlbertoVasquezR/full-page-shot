@@ -1,0 +1,382 @@
+import { captureFullPage, CaptureError } from "./capture";
+import { getSettings } from "./settings";
+import type {
+  CaptureMode,
+  CaptureResult,
+  ClipboardWriteResult,
+  CopyHelperJob,
+  CopyToClipboardRequest,
+  PopupEvent,
+  ProgressStage,
+} from "./types";
+import { baseName, buildFilename, describeError, estimatedBytes } from "./util";
+
+const HELPER_PATH = "helper.html";
+/** Margen para abrir la ventana auxiliar, copiar y cerrarse. */
+const HELPER_TIMEOUT_MS = 15_000;
+
+let busy = false;
+
+/* --------------------------------- Utilidades -------------------------------- */
+
+function emit(event: PopupEvent): void {
+  chrome.runtime.sendMessage(event).catch(() => {
+    // El popup puede estar cerrado; el proceso de captura continua igual.
+  });
+}
+
+function emitProgress(stage: ProgressStage, percent: number, detail: string): void {
+  emit({ target: "popup", type: "PROGRESS", stage, percent, detail });
+  // Progreso en el icono de la barra, util cuando no hay popup abierto (atajo).
+  try {
+    chrome.action.setBadgeText({ text: percent >= 100 ? "" : `${percent}%` });
+    chrome.action.setBadgeBackgroundColor({ color: "#4f46e5" });
+  } catch {
+    // El badge es un extra.
+  }
+}
+
+function fail(message: string, hint: string): void {
+  emit({ target: "popup", type: "ERROR", message, hint });
+}
+
+/** Mapa de notificacion -> descarga, para abrir el archivo al pulsar la notificacion. */
+const notificationDownloads = new Map<string, number>();
+
+async function notify(title: string, message: string, downloadId?: number): Promise<string | undefined> {
+  try {
+    const id = await chrome.notifications.create({
+      type: "basic",
+      iconUrl: chrome.runtime.getURL("icons/icon128.png"),
+      title,
+      message,
+      // Hace que la notificacion siga visible hasta que el usuario la cierre o pulse.
+      requireInteraction: false,
+    });
+    if (id && typeof downloadId === "number") notificationDownloads.set(id, downloadId);
+    return id;
+  } catch {
+    // Las notificaciones son un extra: si fallan, no rompen la captura.
+    return undefined;
+  }
+}
+
+// Al pulsar una notificacion, se abre (o se muestra en la carpeta) la imagen capturada.
+chrome.notifications.onClicked.addListener((notificationId) => {
+  const downloadId = notificationDownloads.get(notificationId);
+  notificationDownloads.delete(notificationId);
+  if (typeof downloadId !== "number") return;
+  // Se intenta abrir el archivo con el visor predeterminado; si no se puede,
+  // se muestra en la carpeta de Descargas.
+  chrome.downloads.open(downloadId).catch(() => {
+    chrome.downloads.show(downloadId);
+  });
+  chrome.notifications.clear(notificationId);
+});
+
+chrome.notifications.onClosed.addListener((notificationId) => {
+  notificationDownloads.delete(notificationId);
+});
+
+/* -------------------------------- Portapapeles ------------------------------ */
+
+/**
+ * La API del portapapeles exige que el documento tenga el foco y las paginas
+ * offscreen nunca lo tienen, asi que la copia se hace en paginas con foco:
+ *  1. El popup, que ya esta enfocado mientras el usuario mira el progreso.
+ *  2. Si el popup se cerro, una ventana auxiliar diminuta y enfocada.
+ */
+
+let pendingJob: CopyHelperJob | null = null;
+let helperWindowId: number | null = null;
+let resolveHelper: ((outcome: ClipboardWriteResult) => void) | null = null;
+
+function finishHelper(outcome: ClipboardWriteResult): void {
+  const resolve = resolveHelper;
+  resolveHelper = null;
+  pendingJob = null;
+  resolve?.(outcome);
+}
+
+async function copyFromPopup(base64: string, mimeType: string): Promise<ClipboardWriteResult | null> {
+  const request: CopyToClipboardRequest = { target: "popup", type: "COPY", base64, mimeType };
+  try {
+    const response = (await chrome.runtime.sendMessage(request)) as ClipboardWriteResult | undefined;
+    return response ?? null;
+  } catch {
+    // El popup no esta abierto: nadie atendio el mensaje.
+    return null;
+  }
+}
+
+async function copyFromHelperWindow(base64: string, mimeType: string): Promise<ClipboardWriteResult> {
+  pendingJob = { base64, mimeType };
+
+  const answered = new Promise<ClipboardWriteResult>((resolve) => {
+    resolveHelper = resolve;
+  });
+
+  try {
+    const created = await chrome.windows.create({
+      url: chrome.runtime.getURL(HELPER_PATH),
+      type: "popup",
+      focused: true,
+      width: 240,
+      height: 150,
+    });
+    helperWindowId = created?.id ?? null;
+  } catch (error) {
+    finishHelper({ ok: false, method: "", error: describeError(error) });
+    return { ok: false, method: "", error: describeError(error) };
+  }
+
+  const outcome = await Promise.race([
+    answered,
+    new Promise<ClipboardWriteResult>((resolve) =>
+      setTimeout(() => resolve({ ok: false, method: "", error: "La ventana auxiliar no respondio a tiempo." }), HELPER_TIMEOUT_MS),
+    ),
+  ]);
+
+  await closeHelperWindow();
+  return outcome;
+}
+
+async function closeHelperWindow(): Promise<void> {
+  const id = helperWindowId;
+  helperWindowId = null;
+  pendingJob = null;
+  if (id === null) return;
+  try {
+    await chrome.windows.remove(id);
+  } catch {
+    // La ventana ya se cerro sola tras copiar.
+  }
+}
+
+async function copyToClipboard(base64: string, mimeType: string): Promise<ClipboardWriteResult> {
+  const fromPopup = await copyFromPopup(base64, mimeType);
+  if (fromPopup?.ok) return fromPopup;
+
+  const fromHelper = await copyFromHelperWindow(base64, mimeType);
+  if (fromHelper.ok) return fromHelper;
+
+  // Si el popup dio un error concreto, es mas informativo que el del respaldo.
+  return fromPopup ?? fromHelper;
+}
+
+/* --------------------------------- Captura ---------------------------------- */
+
+async function runCapture(tabId: number, forceMode?: CaptureMode): Promise<CaptureResult> {
+  const startedAt = Date.now();
+  const settings = await getSettings();
+  if (forceMode) settings.captureMode = forceMode;
+
+  const keepAlive = setInterval(() => {
+    chrome.storage.local.get("fps-keepalive").catch(() => {});
+  }, 20_000);
+
+  try {
+    const output = await captureFullPage(tabId, settings, emitProgress);
+
+  let clipboard: CaptureResult["clipboard"] = "skipped";
+  let clipboardError = "";
+  let clipboardMethod = "";
+
+  if (settings.copyToClipboard) {
+    emitProgress("clipboard", 95, "Copiando al portapapeles");
+    try {
+      const response = await copyToClipboard(output.base64, output.mimeType);
+      clipboard = response.ok ? "ok" : "failed";
+      clipboardError = response.error;
+      clipboardMethod = response.method;
+    } catch (error) {
+      clipboard = "failed";
+      clipboardError = describeError(error);
+    }
+  }
+
+  emitProgress("saving", 98, "Guardando el archivo");
+  const filename = buildFilename(output.url, settings.format, settings.subfolder);
+
+  // Se usa una data URL: evita depender del ciclo de vida de un blob entre contextos.
+  const downloadId = await chrome.downloads.download({
+    url: `data:${output.mimeType};base64,${output.base64}`,
+    filename,
+    saveAs: settings.askWhereToSave,
+    conflictAction: "uniquify",
+  });
+
+  const result: CaptureResult = {
+    filename,
+    displayName: baseName(filename),
+    width: output.width,
+    height: output.height,
+    bytes: estimatedBytes(output.base64),
+    downscaled: output.downscaled,
+    downloadId,
+    clipboard,
+    clipboardError,
+    clipboardMethod,
+    elapsedMs: Date.now() - startedAt,
+  };
+
+  const details = `${result.width} × ${result.height} px`;
+  if (settings.notifyOnDone) {
+    await notify("Captura lista", `${result.displayName} · ${details}`, downloadId);
+  }
+
+  // Historial de las ultimas capturas.
+  try {
+    const stored = await chrome.storage.local.get("recentCaptures");
+    const list = Array.isArray(stored?.recentCaptures) ? stored.recentCaptures : [];
+    list.unshift({
+      displayName: result.displayName,
+      filename: result.filename,
+      width: result.width,
+      height: result.height,
+      downloadId: result.downloadId,
+      timestamp: Date.now(),
+    });
+    await chrome.storage.local.set({ recentCaptures: list.slice(0, 8) });
+  } catch {
+    // El historial es un extra.
+  }
+
+  return result;
+  } finally {
+    clearInterval(keepAlive);
+    chrome.action.setBadgeText({ text: "" }).catch(() => {});
+  }
+}
+
+/* --------------------------------- Mensajes --------------------------------- */
+
+/** Los mensajes llegan de otros contextos: se validan campo a campo. */
+interface IncomingMessage {
+  target?: string;
+  type?: string;
+  tabId?: number;
+  ok?: boolean;
+  method?: string;
+  error?: string;
+}
+
+chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
+  const request = message as IncomingMessage | undefined;
+  if (!request || request.target !== "background") return undefined;
+
+  if (request.type === "COPY_HELPER_READY") {
+    // La ventana auxiliar pide el trabajo pendiente (puede venir vacio).
+    sendResponse(pendingJob);
+    return true;
+  }
+
+  if (request.type === "COPY_HELPER_RESULT") {
+    finishHelper({
+      ok: request.ok === true,
+      method: typeof request.method === "string" ? request.method : "",
+      error: typeof request.error === "string" ? request.error : "",
+    });
+    sendResponse({ ok: true });
+    return true;
+  }
+
+  if (request.type === "OPEN_OPTIONS") {
+    chrome.runtime.openOptionsPage();
+    sendResponse({ ok: true });
+    return true;
+  }
+
+  if (request.type === "CAPTURE") {
+    if (busy) {
+      const response = { ok: false as const, message: "Ya hay una captura en curso.", hint: "Espera unos segundos." };
+      fail(response.message, response.hint);
+      sendResponse(response);
+      return true;
+    }
+    if (typeof request.tabId !== "number" || request.tabId < 0) {
+      const response = {
+        ok: false as const,
+        message: "No se pudo identificar la pestaña activa.",
+        hint: "Abre una página normal (http o https) y vuelve a intentarlo.",
+      };
+      fail(response.message, response.hint);
+      sendResponse(response);
+      return true;
+    }
+
+    const tabId = request.tabId;
+    busy = true;
+    runCapture(tabId)
+      .then((result) => {
+        emit({ target: "popup", type: "DONE", result });
+        sendResponse({ ok: true as const, result });
+      })
+      .catch((error: unknown) => {
+        const captureError = error instanceof CaptureError ? error : null;
+        const message = captureError?.message ?? "No se pudo completar la captura.";
+        const hint = captureError?.hint ?? describeError(error);
+        fail(message, hint);
+        sendResponse({ ok: false as const, message, hint });
+      })
+      .finally(() => {
+        busy = false;
+      });
+
+    return true;
+  }
+
+  return undefined;
+});
+
+// Atajos de teclado: capturan la pestaña activa sin abrir el popup.
+chrome.commands.onCommand.addListener((command) => {
+  const forceMode: CaptureMode | undefined =
+    command === "capture-visible" ? "visible" : undefined;
+  if (command !== "capture-page" && command !== "capture-visible") return;
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs?.[0];
+    if (!tab?.id) return;
+    if (busy) {
+      chrome.notifications.create({
+        type: "basic",
+        iconUrl: chrome.runtime.getURL("icons/icon128.png"),
+        title: "Full Page Shot",
+        message: "Ya hay una captura en curso.",
+      });
+      return;
+    }
+    const tabId = tab.id;
+    busy = true;
+    emitProgress("preparing", 2, "Iniciando captura por atajo…");
+    runCapture(tabId, forceMode)
+      .then((result) => {
+        emit({ target: "popup", type: "DONE", result });
+        chrome.notifications.create({
+          type: "basic",
+          iconUrl: chrome.runtime.getURL("icons/icon128.png"),
+          title: "Captura lista",
+          message: `${result.displayName} · ${result.width} × ${result.height} px`,
+        }, (nid) => {
+          if (nid) notificationDownloads.set(nid, result.downloadId);
+        });
+      })
+      .catch((error: unknown) => {
+        const captureError = error instanceof CaptureError ? error : null;
+        const message = captureError?.message ?? "No se pudo completar la captura.";
+        const hint = captureError?.hint ?? describeError(error);
+        fail(message, hint);
+        chrome.notifications.create({
+          type: "basic",
+          iconUrl: chrome.runtime.getURL("icons/icon128.png"),
+          title: "Error en la captura",
+          message: `${message} ${hint}`.trim(),
+        });
+      })
+      .finally(() => {
+        busy = false;
+        chrome.action.setBadgeText({ text: "" }).catch(() => {});
+      });
+  });
+});
