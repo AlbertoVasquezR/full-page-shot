@@ -560,6 +560,134 @@ async function waitForIframes(target: Debuggee): Promise<void> {
   }
 }
 
+/**
+ * Prepara la pagina para la captura: espera fuentes, pausa animaciones y transiciones,
+ * fuerza content-visibility a visible y elimina containment que podria ocultar contenido.
+ * Se restaura al final con RESTORE_PAGE_SCRIPT.
+ */
+const PREPARE_PAGE_SCRIPT = `(function () {
+  try {
+    // Guardar estilos originales para restaurarlos.
+    window.__fpsOriginalStyles = window.__fpsOriginalStyles || new Map();
+
+    // 1) Forzar content-visibility: visible en todos los elementos.
+    var all = document.querySelectorAll('body *');
+    var limit = Math.min(all.length, 5000);
+    for (var i = 0; i < limit; i++) {
+      var el = all[i];
+      var cs = getComputedStyle(el);
+      if (cs.contentVisibility && cs.contentVisibility !== 'visible') {
+        if (!window.__fpsOriginalStyles.has(el)) window.__fpsOriginalStyles.set(el, { cv: el.style.contentVisibility });
+        el.style.setProperty('content-visibility', 'visible', 'important');
+      }
+      // 2) Eliminar containment que podria recortar.
+      if (cs.contain && cs.contain !== 'none') {
+        if (!window.__fpsOriginalStyles.has(el)) window.__fpsOriginalStyles.set(el, {});
+        var s = window.__fpsOriginalStyles.get(el);
+        s.contain = el.style.contain;
+        el.style.setProperty('contain', 'none', 'important');
+      }
+    }
+
+    // 3) Pausar animaciones y transiciones.
+    var style = document.getElementById('__fps-pause-style');
+    if (!style) {
+      style = document.createElement('style');
+      style.id = '__fps-pause-style';
+      style.textContent = '*, *::before, *::after { animation-play-state: paused !important; transition: none !important; }';
+      (document.head || document.documentElement).appendChild(style);
+    }
+
+    return true;
+  } catch (e) {
+    return false;
+  }
+})()`;
+
+const RESTORE_PAGE_SCRIPT = `(function () {
+  try {
+    // Restaurar content-visibility y contain.
+    if (window.__fpsOriginalStyles) {
+      window.__fpsOriginalStyles.forEach(function (orig, el) {
+        try {
+          if (orig.cv !== undefined) el.style.removeProperty('content-visibility');
+          if (orig.contain !== undefined) {
+            if (orig.contain) el.style.contain = orig.contain;
+            else el.style.removeProperty('contain');
+          }
+        } catch (e) {}
+      });
+      window.__fpsOriginalStyles = null;
+    }
+    // Quitar el style de pausa.
+    var style = document.getElementById('__fps-pause-style');
+    if (style && style.parentNode) style.parentNode.removeChild(style);
+    return true;
+  } catch (e) {
+    return false;
+  }
+})()`;
+
+/**
+ * Espera a que las fuentes web terminen de cargar (evita texto faltante).
+ */
+const WAIT_FONTS_SCRIPT = `new Promise(function (resolve) {
+  try {
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { resolve(true); });
+      setTimeout(function () { resolve(true); }, 3000);
+    } else {
+      resolve(true);
+    }
+  } catch (e) {
+    resolve(true);
+  }
+})`;
+
+/**
+ * Recorre shadow roots buscando imagenes con carga diferida y fuerza su carga.
+ */
+const LOAD_SHADOW_IMAGES_SCRIPT = `(function () {
+  try {
+    function walk(root) {
+      if (!root) return;
+      var imgs = root.querySelectorAll ? root.querySelectorAll('img[loading="lazy"], img[data-src], img[data-lazy-src]') : [];
+      for (var i = 0; i < imgs.length; i++) {
+        var img = imgs[i];
+        if (img.dataset && img.dataset.src) img.src = img.dataset.src;
+        if (img.dataset && img.dataset.lazySrc) img.src = img.dataset.lazySrc;
+        img.loading = 'eager';
+      }
+      var all = root.querySelectorAll ? root.querySelectorAll('*') : [];
+      for (var j = 0; j < all.length; j++) {
+        if (all[j].shadowRoot) walk(all[j].shadowRoot);
+      }
+    }
+    walk(document);
+    return true;
+  } catch (e) {
+    return false;
+  }
+})()`;
+
+async function preparePage(target: Debuggee): Promise<void> {
+  try {
+    await evaluate<boolean>(target, PREPARE_PAGE_SCRIPT);
+    await evaluate<boolean>(target, LOAD_SHADOW_IMAGES_SCRIPT);
+    await evaluate<boolean>(target, WAIT_FONTS_SCRIPT);
+  } catch {
+    // No es critico.
+  }
+}
+
+async function restorePage(target: Debuggee): Promise<void> {
+  try {
+    await evaluate<boolean>(target, RESTORE_PAGE_SCRIPT);
+  } catch {
+    // No es critico.
+  }
+}
+
 const HIDE_ATTRIBUTE = "data-full-page-shot-oculto";
 
 /**
@@ -1126,6 +1254,9 @@ export async function captureFullPage(
       await repaintPage(target);
     }
 
+    onProgress("loading", 7, "Preparando la página");
+    await preparePage(target);
+
     if (settings.dismissCookieBanners) {
       onProgress("loading", 6, "Cerrando banners de cookies");
       await dismissCookieBanners(target);
@@ -1185,6 +1316,8 @@ export async function captureFullPage(
   } catch (error) {
     throw friendlyError(error);
   } finally {
+    // Restaurar los estilos que se cambiaron para capturar.
+    await restorePage(target);
     // La captura por segmentos desplaza la pagina: se devuelve a su sitio.
     await scrollTo(target, initialScroll);
     await detach(target);

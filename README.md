@@ -20,6 +20,7 @@
 - 🐢 **Carga diferida (lazy loading)**: opción para recorrer la página antes de capturar en modo rápido.
 - ♾️ **Scroll infinito**: opción para seguir capturando mientras la página siga creciendo (feeds, listas).
 - 🎨 **Repintado previo**: mejora la captura de Canvas/WebGL y animaciones.
+- 🧹 **Preparación de la página**: espera a que carguen las fuentes, pausa animaciones/transiciones, fuerza `content-visibility: visible` y elimina `contain` que podría ocultar contenido, antes de capturar. Todo se restaura al terminar.
 - 🍪 **Cierre de banners de cookies** antes de capturar (OneTrust, Cookiebot, Didomi, Quantcast…).
 - 🖼️ **PNG y JPEG** con control de calidad.
 - 📋 **Copiar al portapapeles** como imagen real (no texto ni HTML).
