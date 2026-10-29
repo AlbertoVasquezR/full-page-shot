@@ -163,4 +163,6 @@ protocolo DevTools, no inyectando código.
 
 ## 📝 Licencia
 
-Uso personal. Sin licencia de terceros más allá de las dependencias (esbuild, typescript, @types/chrome, puppeteer-core para las pruebas).
+Este proyecto se distribuye bajo la **licencia MIT**, es decir, uso libre: puedes usarlo, copiarlo, modificarlo, fusionarlo, publicarlo, distribuirlo, sublicenciarlo y/o venderlo, siempre que mantengas el aviso de copyright y la licencia. Consulta el archivo [`LICENSE`](./LICENSE) para el texto completo.
+
+Las dependencias (esbuild, typescript, @types/chrome, puppeteer-core) se rigen por sus propias licencias.
