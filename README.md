@@ -1,71 +1,52 @@
-# Full Page Shot
+# 📸 Full Page Shot
 
-Extensión para **Microsoft Edge** que toma una captura de **toda la página**, por larga que sea,
-y la guarda como **PNG** o **JPEG**. Escrita en **TypeScript** y empaquetada con **esbuild**.
+> Extensión para **Microsoft Edge** que captura **toda la página**, por larga que sea, y la guarda como **PNG** o **JPEG**. Escrita en **TypeScript** y empaquetada con **esbuild**.
 
-No pega trozos a ciegas: usa el **Chrome DevTools Protocol** para que el navegador
-renderice la página y devuelva **una sola imagen sin costuras**. Y si el contenido
-solo aparece al desplazarse, tiene un **modo por scroll** que recorre la página
-pantalla a pantalla.
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-4f46e5?style=flat-square)](#)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white)](#)
+[![esbuild](https://img.shields.io/badge/bundler-esbuild-ffcf00?style=flat-square)](#)
+[![Edge](https://img.shields.io/badge/browser-Microsoft%20Edge-0078d4?style=flat-square&logo=microsoftedge&logoColor=white)](#)
 
 ---
 
-## Qué hace
+## ✨ Qué hace
 
-- **Tres formas de recorrer la página** (se elige en el popup o en Opciones):
-  - **Automático** (por defecto): analiza la página y decide si conviene el
-    recorrido por scroll. Detecta carga diferida, `content-visibility: auto`,
-    animaciones de entrada, contenedores que se desplazan por dentro, listas
-    virtualizadas, iframes pesados, diseño con scroll-snap, parallax, imágenes de
-    fondo diferidas, scroll suave y, como prueba final, desplaza la página para
-    ver si aparecen nodos o clases de visibilidad nuevas. Empieza por aquí.
-  - **Rápido**: una sola pasada con `Page.captureScreenshot` +
-    `captureBeyondViewport`. Devuelve **una sola imagen sin costuras**.
-  - **Por scroll**: baja la vista **pantalla a pantalla**, espera a que cada tramo
-    se pinte y los une. Es lo que hace falta cuando el contenido solo aparece al
-    desplazarse (imágenes con carga diferida, listas virtualizadas, animaciones de
-    entrada). Más lento, pero captura lo que de verdad se ve.
-- **Páginas gigantes**: si superan el límite de la superficie de la GPU se capturan por
-  segmentos y se unen en un lienzo, con presupuesto de memoria y reducción automática si
-  hace falta (te avisa con la etiqueta `reducida`).
-- **Carga diferida (lazy loading)**: opción para recorrer la página antes de capturar en
-  modo rápido, para que las imágenes que aún no se habían cargado aparezcan.
-- **PNG y JPEG** con control de calidad.
-- **Copiar al portapapeles** como imagen de verdad (no como texto ni HTML).
-- **Notificación al terminar**: si la activas, al pulsarla se abre la imagen
-  capturada (o se muestra en la carpeta si no hay visor disponible).
-- **Atajos de teclado**: `Ctrl+Shift+S` captura la página completa y
-  `Ctrl+Shift+V` solo la vista visible, sin abrir el popup. El progreso se ve en
-  el icono de la barra.
-- **Cerrar banners de cookies** antes de capturar (activado por defecto).
-- **Retardo configurable** (0–10 s) para capturar menús desplegados o estados
-  con hover.
-- **Modo "Visible"**: captura solo lo que se ve ahora, sin desplazarse.
-- **Historial de las últimas capturas** en el popup, con botón "Ver".
-- **Restaurar valores por defecto** en Opciones.
+- 📄 **Captura completa real** con `Page.captureScreenshot` + `captureBeyondViewport`. Una sola imagen, sin costuras.
+- 🧠 **Modo Automático** (por defecto): analiza la página y decide si conviene recorrerla por scroll. Detecta carga diferida, `content-visibility: auto`, animaciones de entrada, contenedores con scroll interno, listas virtualizadas, iframes pesados, scroll-snap, parallax, imágenes de fondo diferidas y cambios por `IntersectionObserver`.
+- 📜 **Modo Por scroll**: baja la vista pantalla a pantalla y une las capturas. Para contenido que solo aparece al desplazarse.
+- ⚡ **Modo Rápido**: una sola pasada, sin desplazar la página.
+- 👁️ **Modo Visible**: captura solo lo que se ve ahora (ideal para estados con hover o menús abiertos).
+- 📏 **Páginas gigantes**: si superan el límite de la GPU se capturan por segmentos y se unen en un lienzo, con reducción automática si hace falta (etiqueta `reducida`).
+- 🐢 **Carga diferida (lazy loading)**: opción para recorrer la página antes de capturar en modo rápido.
+- 🍪 **Cierre de banners de cookies** antes de capturar (OneTrust, Cookiebot, Didomi, Quantcast…).
+- 🖼️ **PNG y JPEG** con control de calidad.
+- 📋 **Copiar al portapapeles** como imagen real (no texto ni HTML).
+- 📁 **Carpeta de destino**: subcarpeta dentro de Descargas o diálogo nativo de Windows.
+- 🔔 **Notificación al terminar**: al pulsarla se abre la imagen capturada.
+- ⌨️ **Atajos de teclado**: `Ctrl+Shift+S` (página completa) y `Ctrl+Shift+V` (solo visible).
+- ⏱️ **Retardo configurable** (0–10 s) para capturar estados con hover.
+- 🕘 **Historial** de las últimas capturas en el popup.
+- 🌙 **Tema claro/oscuro** automático.
 
-> **¿Cuál elijo?** Por defecto **Automático** ya decide por ti. Si quieres forzar
-> un comportamiento concreto (p. ej. "Rápido" para ir rápido en páginas simples, o
-> "Por scroll" en una página que el automático no detecta bien), cámbialo en el
-> popup o en Opciones.
+> **¿Cuál elijo?** Por defecto **Automático** ya decide por ti. Si quieres forzar un comportamiento concreto, cámbialo en el popup o en Opciones.
 
-## Copiar al portapapeles: cómo funciona
+---
 
-Chromium **solo** admite copiar una imagen por código con la API asíncrona del
-portapapeles, y esa API exige que el documento **tenga el foco**. Por eso:
+## 🧩 Cómo funciona el portapapeles
 
-- La copia la hace el **popup**, que ya está enfocado mientras ves el progreso.
-- Si cierras el popup antes de que acabe (clic en la página, diálogo de "Guardar como"…),
-  la extensión abre una **ventana auxiliar diminuta y enfocada** que copia y se cierra sola.
+Chromium **solo** admite copiar una imagen por código con la API asíncrona del portapapeles, y esa API exige que el documento **tenga el foco**. Por eso:
 
-Un documento *offscreen* no sirve aquí: nunca puede tener foco, y el viejo
-`document.execCommand("copy")` solo deja texto y HTML en el portapapeles, no una imagen.
-(Véanse chromium/issues/40252021 y 40288517.)
+1. La copia la hace el **popup**, que ya está enfocado mientras ves el progreso.
+2. Si cierras el popup antes de que acabe, la extensión abre una **ventana auxiliar diminuta y enfocada** que copia y se cierra sola.
 
-## Instalación
+Un documento *offscreen* no sirve aquí: nunca puede tener foco, y el viejo `document.execCommand("copy")` solo deja texto y HTML en el portapapeles, no una imagen. (Véanse chromium/issues/40252021 y 40288517.)
+
+---
+
+## 🚀 Instalación
 
 ```powershell
-npm install      # ya está hecho si clonaste con node_modules
+npm install
 npm run build    # compila a dist/
 ```
 
@@ -81,15 +62,19 @@ Luego, en Edge:
 > completa. Mientras se toma una captura aparece una barra amarilla de "está depurando este
 > navegador": es normal y desaparece al terminar.
 
-## Uso
+---
+
+## 🎯 Uso
 
 1. Abre la página que quieras capturar (una normal, `http` o `https`).
 2. Pulsa el icono de la extensión.
-3. Elige el **formato** y el **recorrido de la página** (*Rápido* o *Por scroll*).
-4. Pulsa **Capturar página completa**.
+3. Elige el **formato** y el **recorrido de la página** (Automático / Rápido / Por scroll / Visible).
+4. Pulsa **Capturar página completa** (o usa `Ctrl+Shift+S`).
 5. La imagen se guarda y, si lo activaste, se copia al portapapeles.
 
-## Scripts
+---
+
+## 📜 Scripts
 
 | Comando | Qué hace |
 | --- | --- |
@@ -103,7 +88,9 @@ Luego, en Edge:
 
 Tras cambiar código hay que pulsar **Recargar** en `edge://extensions/`.
 
-## Estructura
+---
+
+## 📂 Estructura
 
 ```
 full-page-shot/
@@ -129,7 +116,9 @@ full-page-shot/
 └── tsconfig.json
 ```
 
-## Permisos y por qué
+---
+
+## 🔐 Permisos y por qué
 
 | Permiso | Motivo |
 | --- | --- |
@@ -142,28 +131,25 @@ full-page-shot/
 **No pide acceso a sitios web** (`host_permissions`): la URL y el título se leen por el
 protocolo DevTools, no inyectando código.
 
-## Límites reales (esto no lo puede saltar ninguna extensión)
+---
 
-- **Páginas internas**: `edge://`, `chrome://`, la tienda de complementos de Edge, pestañas
-  nuevas y páginas de extensiones. Edge bloquea el depurador ahí por seguridad.
+## ⚠️ Límites reales (esto no lo puede saltar ninguna extensión)
+
+- **Páginas internas**: `edge://`, `chrome://`, la tienda de complementos de Edge, pestañas nuevas y páginas de extensiones.
 - **PDFs** abiertos en el visor interno.
 - **Contenido de iframes de otros dominios** puede salir en blanco.
 - **Canvas/WebGL** a veces no se renderiza en la captura.
 - **DevTools abierto** en la misma pestaña: solo se admite un depurador a la vez. Ciérralo.
 - **Políticas de empresa** pueden bloquear la captura (`Screenshot capture is restricted by policy`).
-- **Captura de una sola toma**: `chrome.debugger` rechaza capturas de más de ~16 000 px de alto,
-  así que las páginas más largas se capturan **por segmentos** y se unen.
-- **Páginas de más de ~30 000 px de alto**: se reducen proporcionalmente para caber en el
-  lienzo del navegador (la etiqueta `reducida` lo indica). Una página de 45 000 px sale como
-  una imagen de 30 000 px de alto, completa y sin cortes, pero más pequeña.
-- **Copiar al portapapeles** necesita una página de la extensión con foco; si cierras el popup
-  durante la captura, se usa una ventana auxiliar.
-- **Páginas con scroll interno**: algunas aplicaciones (por ejemplo, paneles con
-  `html { overflow: hidden }` y el contenido desplazándose dentro del `body` o de un
-  contenedor) no se capturaban antes. Ahora la extensión detecta el contenedor
-  principal desplazable, mide su altura real y recorre ese contenedor.
+- **Captura de una sola toma**: `chrome.debugger` rechaza capturas de más de ~16 000 px de alto, así que las páginas más largas se capturan **por segmentos** y se unen.
+- **Páginas de más de ~30 000 px de alto**: se reducen proporcionalmente para caber en el lienzo del navegador (la etiqueta `reducida` lo indica).
+- **Copiar al portapapeles** necesita una página de la extensión con foco; si cierras el popup durante la captura, se usa una ventana auxiliar.
+- **Modo por scroll**: más lento (una captura por pantalla) y se detiene al final que tenía la página al empezar; no sigue cargando un feed infinito. En cambio, captura fielmente lo que solo aparece al desplazarse.
+- **Páginas con scroll interno**: algunas aplicaciones (paneles con `html { overflow: hidden }` y el contenido desplazándose dentro del `body` o de un contenedor) se capturan midiendo y recorriendo ese contenedor.
 
-## Problemas frecuentes
+---
+
+## 🛠️ Problemas frecuentes
 
 | Síntoma | Solución |
 | --- | --- |
@@ -172,3 +158,9 @@ protocolo DevTools, no inyectando código.
 | La captura sale en blanco | Activa *Recorrer la página antes de capturar* en Opciones. |
 | Faltan bloques o salen repetidos | Cambia el **recorrido** a *Por scroll* (contenido que solo aparece al bajar). |
 | Cambié el código y no pasa nada | Pulsa **Recargar** en `edge://extensions/`. |
+
+---
+
+## 📝 Licencia
+
+Uso personal. Sin licencia de terceros más allá de las dependencias (esbuild, typescript, @types/chrome, puppeteer-core para las pruebas).
