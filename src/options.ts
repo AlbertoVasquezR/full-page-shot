@@ -12,6 +12,8 @@ const subfolderInput = el<HTMLInputElement>("subfolder");
 const askWhereInput = el<HTMLInputElement>("askWhere");
 const lazyLoadInput = el<HTMLInputElement>("lazyLoad");
 const dismissCookiesInput = el<HTMLInputElement>("dismissCookies");
+const followInfiniteInput = el<HTMLInputElement>("followInfinite");
+const repaintCanvasInput = el<HTMLInputElement>("repaintCanvas");
 const captureDelayInput = el<HTMLInputElement>("captureDelay");
 const captureDelayValue = el<HTMLOutputElement>("captureDelayValue");
 const notifyInput = el<HTMLInputElement>("notify");
@@ -62,6 +64,8 @@ function applySettings(settings: Settings): void {
   askWhereInput.checked = settings.askWhereToSave;
   lazyLoadInput.checked = settings.lazyLoadPass;
   dismissCookiesInput.checked = settings.dismissCookieBanners;
+  followInfiniteInput.checked = settings.followInfiniteScroll;
+  repaintCanvasInput.checked = settings.repaintCanvas;
   captureDelayInput.value = String(settings.captureDelay);
   captureDelayValue.textContent = String(settings.captureDelay);
   notifyInput.checked = settings.notifyOnDone;
@@ -84,6 +88,8 @@ async function save(): Promise<void> {
       askWhereToSave: askWhereInput.checked,
       lazyLoadPass: lazyLoadInput.checked,
       dismissCookieBanners: dismissCookiesInput.checked,
+      followInfiniteScroll: followInfiniteInput.checked,
+      repaintCanvas: repaintCanvasInput.checked,
       captureDelay: Number(captureDelayInput.value),
       notifyOnDone: notifyInput.checked,
       captureMode: mode,

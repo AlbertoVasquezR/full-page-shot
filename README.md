@@ -18,6 +18,8 @@
 - 👁️ **Modo Visible**: captura solo lo que se ve ahora (ideal para estados con hover o menús abiertos).
 - 📏 **Páginas gigantes**: si superan el límite de la GPU se capturan por segmentos y se unen en un lienzo, con reducción automática si hace falta (etiqueta `reducida`).
 - 🐢 **Carga diferida (lazy loading)**: opción para recorrer la página antes de capturar en modo rápido.
+- ♾️ **Scroll infinito**: opción para seguir capturando mientras la página siga creciendo (feeds, listas).
+- 🎨 **Repintado previo**: mejora la captura de Canvas/WebGL y animaciones.
 - 🍪 **Cierre de banners de cookies** antes de capturar (OneTrust, Cookiebot, Didomi, Quantcast…).
 - 🖼️ **PNG y JPEG** con control de calidad.
 - 📋 **Copiar al portapapeles** como imagen real (no texto ni HTML).
@@ -144,7 +146,8 @@ protocolo DevTools, no inyectando código.
 - **Captura de una sola toma**: `chrome.debugger` rechaza capturas de más de ~16 000 px de alto, así que las páginas más largas se capturan **por segmentos** y se unen.
 - **Páginas de más de ~30 000 px de alto**: se reducen proporcionalmente para caber en el lienzo del navegador (la etiqueta `reducida` lo indica).
 - **Copiar al portapapeles** necesita una página de la extensión con foco; si cierras el popup durante la captura, se usa una ventana auxiliar.
-- **Modo por scroll**: más lento (una captura por pantalla) y se detiene al final que tenía la página al empezar; no sigue cargando un feed infinito. En cambio, captura fielmente lo que solo aparece al desplazarse.
+- **Modo por scroll**: más lento (una captura por pantalla). Por defecto se detiene al final que tenía la página al empezar; con **Seguir el scroll infinito** activado, sigue capturando mientras la página siga creciendo (feeds, listas que cargan más al bajar), con un tope de seguridad. Captura fielmente lo que solo aparece al desplazarse.
+- **Canvas/WebGL**: se fuerza un repintado antes de capturar (activado por defecto) para mejorar la captura de gráficos y animaciones.
 - **Páginas con scroll interno**: algunas aplicaciones (paneles con `html { overflow: hidden }` y el contenido desplazándose dentro del `body` o de un contenedor) se capturan midiendo y recorriendo ese contenedor.
 
 ---

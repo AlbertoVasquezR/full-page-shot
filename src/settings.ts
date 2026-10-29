@@ -21,6 +21,8 @@ function normalize(raw: Record<string, unknown>): Settings {
       raw.captureMode === "visible" ? "visible" : "auto",
     captureDelay: Number.isFinite(Number(raw.captureDelay)) ? Math.min(10, Math.max(0, Math.round(Number(raw.captureDelay)))) : DEFAULT_SETTINGS.captureDelay,
     dismissCookieBanners: asBoolean(raw.dismissCookieBanners, DEFAULT_SETTINGS.dismissCookieBanners),
+    followInfiniteScroll: asBoolean(raw.followInfiniteScroll, DEFAULT_SETTINGS.followInfiniteScroll),
+    repaintCanvas: asBoolean(raw.repaintCanvas, DEFAULT_SETTINGS.repaintCanvas),
   };
 }
 

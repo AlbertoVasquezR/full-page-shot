@@ -35,6 +35,10 @@ export interface Settings {
   captureDelay: number;
   /** Intentar cerrar banners de cookies/consentimiento antes de capturar. */
   dismissCookieBanners: boolean;
+  /** Seguir capturando mientras la pagina crece (scroll infinito). */
+  followInfiniteScroll: boolean;
+  /** Forzar repintado antes de capturar (mejora Canvas/WebGL). */
+  repaintCanvas: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -48,6 +52,8 @@ export const DEFAULT_SETTINGS: Settings = {
   captureMode: "auto",
   captureDelay: 0,
   dismissCookieBanners: true,
+  followInfiniteScroll: false,
+  repaintCanvas: true,
 };
 
 export type ProgressStage =

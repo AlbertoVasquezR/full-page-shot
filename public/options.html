@@ -90,6 +90,22 @@
           </span>
         </label>
 
+        <label class="check">
+          <input id="followInfinite" type="checkbox" />
+          <span>
+            Seguir el scroll infinito
+            <em>Captura mientras la página siga creciendo (feeds, listas que cargan más al bajar). Más lento.</em>
+          </span>
+        </label>
+
+        <label class="check">
+          <input id="repaintCanvas" type="checkbox" />
+          <span>
+            Repintar antes de capturar
+            <em>Mejora la captura de Canvas/WebGL y animaciones. Activado por defecto.</em>
+          </span>
+        </label>
+
         <div class="field">
           <label class="field__label" for="captureDelay">Retardo antes de capturar · <output id="captureDelayValue">0</output> s</label>
           <input id="captureDelay" class="range" type="range" min="0" max="10" step="1" value="0" />

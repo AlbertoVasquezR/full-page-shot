@@ -500,6 +500,66 @@ async function dismissCookieBanners(target: Debuggee): Promise<number> {
   }
 }
 
+/**
+ * Fuerza un repintado de la pagina: util para que Canvas/WebGL y animaciones
+ * se pinten antes de la captura. Se ejecuta una sola vez al empezar.
+ */
+const REPAINT_SCRIPT = `(function () {
+  try {
+    // forzar reflow
+    void document.body.offsetHeight;
+    window.dispatchEvent(new Event('resize'));
+    // micro-scroll para despertar lazy content y compositor
+    var y = window.scrollY || 0;
+    window.scrollTo(0, y + 1);
+    window.scrollTo(0, y);
+    return true;
+  } catch (e) {
+    return false;
+  }
+})()`;
+
+async function repaintPage(target: Debuggee): Promise<void> {
+  try {
+    await evaluate<boolean>(target, REPAINT_SCRIPT);
+    await new Promise((r) => setTimeout(r, 120));
+  } catch {
+    // No es critico.
+  }
+}
+
+/**
+ * Espera a que los iframes (sobre todo los de otros dominios) terminen de cargar.
+ */
+const WAIT_IFRAMES_SCRIPT = `new Promise(function (resolve) {
+  var iframes = Array.prototype.slice.call(document.querySelectorAll('iframe'));
+  if (iframes.length === 0) return resolve(true);
+  var pending = iframes.filter(function (f) { return !f.contentDocument || (f.contentDocument && f.contentDocument.readyState !== 'complete'); });
+  // Solo esperamos los que declaran carga diferida o son visibles; tope de 4 s.
+  var toWait = iframes.slice(0, 20);
+  var done = 0;
+  var total = toWait.length;
+  var finished = false;
+  function finish() { if (finished) return; finished = true; resolve(true); }
+  setTimeout(finish, 4000);
+  toWait.forEach(function (f) {
+    try {
+      if (f.contentDocument && f.contentDocument.readyState === 'complete') { done += 1; if (done >= total) finish(); return; }
+    } catch (e) {}
+    f.addEventListener('load', function () { done += 1; if (done >= total) finish(); }, { once: true });
+    f.addEventListener('error', function () { done += 1; if (done >= total) finish(); }, { once: true });
+  });
+  if (toWait.length === 0) finish();
+})`;
+
+async function waitForIframes(target: Debuggee): Promise<void> {
+  try {
+    await evaluate<boolean>(target, WAIT_IFRAMES_SCRIPT);
+  } catch {
+    // No es critico.
+  }
+}
+
 const HIDE_ATTRIBUTE = "data-full-page-shot-oculto";
 
 /**
@@ -761,8 +821,8 @@ async function captureByScroll(
 
   const viewportHeight = await measureViewport(target);
   const step = Math.max(200, Math.min(viewportHeight, height));
-  const lastY = Math.max(0, height - step);
-  const total = Math.max(1, Math.ceil(height / step));
+  let lastY = Math.max(0, height - step);
+  let total = Math.max(1, Math.ceil(height / step));
   const slices: Slice[] = [];
 
   // Primera pantalla con la pagina intacta y arriba del todo, para que las
@@ -797,6 +857,47 @@ async function captureByScroll(
       }
     } finally {
       if (hidden > 0) await showStickyElements(target);
+    }
+  }
+
+  // Seguimiento de scroll infinito: si la pagina crece al desplazarse, se
+  // capturan los tramos nuevos. Tope de seguridad para no capturar para siempre.
+  if (settings.followInfiniteScroll) {
+    let guard = 0;
+    while (guard < 10) {
+      guard += 1;
+      await scrollTo(target, lastY);
+      await new Promise((r) => setTimeout(r, 700));
+      await settle(target);
+      const measured = await measurePage(target);
+      const newHeight = measured.height;
+      if (!Number.isFinite(newHeight) || newHeight <= height + 50) break;
+
+      const oldHeight = height;
+      height = newHeight;
+      lastY = Math.max(0, height - step);
+
+      onProgress("capturing", 50, `Cargando más contenido (${guard})…`);
+      const hidden = await hideStickyElements(target);
+      try {
+        let y = oldHeight;
+        while (y < newHeight) {
+          const yy = Math.min(y, newHeight - step);
+          await scrollTo(target, yy);
+          await settle(target);
+          slices.push({
+            base64: windowScrolls
+              ? await shoot(target, settings, { x: 0, y: yy, width, height: step, scale: 1 })
+              : await shootViewport(target, settings),
+            y: yy,
+            height: Math.min(step, newHeight - yy),
+          });
+          y += step;
+          if (y >= newHeight) break;
+        }
+      } finally {
+        if (hidden > 0) await showStickyElements(target);
+      }
     }
   }
 
@@ -975,6 +1076,11 @@ export async function captureFullPage(
       }
     }
 
+    if (settings.repaintCanvas) {
+      onProgress("loading", 7, "Repintando la página");
+      await repaintPage(target);
+    }
+
     if (settings.dismissCookieBanners) {
       onProgress("loading", 6, "Cerrando banners de cookies");
       await dismissCookieBanners(target);
@@ -991,6 +1097,8 @@ export async function captureFullPage(
       onProgress("loading", 8, "Desplazando para cargar contenido diferido");
       await runLazyLoadPass(target);
     }
+
+    await waitForIframes(target);
 
     onProgress("measuring", 22, "Midiendo el tamaño de la página");
     const { width, height } = await measurePage(target);
