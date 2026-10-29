@@ -200,6 +200,41 @@ protocolo DevTools, no inyectando código.
 
 ---
 
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Si quieres mejorar Full Page Shot:
+
+1. **Haz un fork** del repositorio.
+2. **Crea una rama** para tu cambio: `git checkout -b feat/mi-mejora`.
+3. **Instala dependencias y compila**: `npm install && npm run check`.
+4. **Prueba tus cambios**:
+   - `npm run typecheck` (tipos).
+   - `node tools/smoke-test.mjs` (prueba de extremo a extremo real).
+   - `node tools/verify-clipboard.mjs` (portapapeles).
+5. **Haz commit** con un mensaje claro y sin co-autoría de IA.
+6. **Abre un Pull Request** describiendo el cambio y cómo probarlo.
+
+### Convenciones
+
+- **TypeScript estricto**, sin JavaScript plano.
+- **esbuild** como bundler; no añadas otros bundlers.
+- Mantén el estilo del código existente (nombres en español en comentarios, mensajes al usuario en español).
+- No añadas `host_permissions` ni inyectes content scripts: la captura se hace por CDP.
+- Si añades una opción nueva, actualiza `types.ts`, `settings.ts`, `options.html/.ts` y el README.
+- Los mensajes de commit deben ser descriptivos; evita trailers de co-autoría automatizados.
+
+### Ideas para contribuir
+
+- Soporte para capturar un área seleccionada.
+- Mejorar la detección automática (nuevos patrones de carga diferida).
+- Atajos de teclado configurables.
+- Internacionalización (i18n).
+- Tests para nuevas rutas de captura.
+
+¿Dudas o sugerencias? Abre un **issue** en el repositorio.
+
+---
+
 ## 📝 Licencia
 
 Este proyecto se distribuye bajo la **licencia MIT**, es decir, uso libre: puedes usarlo, copiarlo, modificarlo, fusionarlo, publicarlo, distribuirlo, sublicenciarlo y/o venderlo, siempre que mantengas el aviso de copyright y la licencia. Consulta el archivo [`LICENSE`](./LICENSE) para el texto completo.
