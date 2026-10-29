@@ -137,8 +137,7 @@ protocolo DevTools, no inyectando código.
 
 ## ⚠️ Límites reales (esto no lo puede saltar ninguna extensión)
 
-- **Páginas internas**: `edge://`, `chrome://`, la tienda de complementos de Edge, pestañas nuevas y páginas de extensiones.
-- **PDFs** abiertos en el visor interno.
+- **Páginas internas y PDFs**: cuando el depurador está bloqueado, la extensión intenta al menos una captura de la vista visible con `chrome.tabs.captureVisibleTab` (requiere hacer clic en el icono sobre esa página). No es captura completa, pero evita quedarse sin nada. También reintenta automáticamente si una captura falla.
 - **Contenido de iframes de otros dominios** puede salir en blanco.
 - **Canvas/WebGL** a veces no se renderiza en la captura.
 - **DevTools abierto** en la misma pestaña: solo se admite un depurador a la vez. Ciérralo.

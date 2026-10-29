@@ -995,6 +995,36 @@ async function isTabActive(tabId: number): Promise<boolean> {
   }
 }
 
+/**
+ * Respaldo para paginas restringidas (internas, PDF, etc.): captura solo la
+ * vista visible con chrome.tabs.captureVisibleTab. No es captura completa, pero
+ * permite obtener algo cuando el depurador esta bloqueado.
+ */
+async function captureVisibleTabFallback(tabId: number, settings: Settings): Promise<CaptureOutput> {
+  const tab = await chrome.tabs.get(tabId);
+  const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, {
+    format: settings.format === "jpeg" ? "jpeg" : "png",
+    quality: settings.format === "jpeg" ? settings.quality : undefined,
+  });
+  const base64 = (dataUrl.split(",")[1] ?? "").trim();
+  if (!base64) throw new CaptureError("Edge no devolvió la imagen.");
+
+  const bitmap = await createImageBitmap(base64ToBlob(base64, mimeFor(settings)));
+  const width = bitmap.width;
+  const height = bitmap.height;
+  bitmap.close();
+
+  return {
+    base64,
+    mimeType: mimeFor(settings),
+    width,
+    height,
+    downscaled: false,
+    url: tab.url ?? "",
+    title: tab.title ?? "",
+  };
+}
+
 /** Captura toda la pagina de una pestana usando el protocolo DevTools. */
 export async function captureFullPage(
   tabId: number,
@@ -1003,11 +1033,26 @@ export async function captureFullPage(
 ): Promise<CaptureOutput> {
   onProgress("preparing", 3, "Conectando con la pestaña");
 
-  let target: Debuggee;
+  let target!: Debuggee;
   try {
     target = await attach(tabId);
   } catch (error) {
-    throw friendlyError(error);
+    const fe = friendlyError(error);
+    // Paginas restringidas: se intenta al menos una captura de la vista visible.
+    const restricted =
+      fe.hint.includes("páginas internas") ||
+      fe.message.includes("No se pudo completar") ||
+      fe.message.includes("bloqueada");
+    if (restricted) {
+      try {
+        onProgress("preparing", 5, "Página restringida: capturando solo la vista visible");
+        const fallback = await captureVisibleTabFallback(tabId, settings);
+        return fallback;
+      } catch {
+        // Si el respaldo también falla, se informa el error original.
+      }
+    }
+    throw fe;
   }
 
   let initialScroll = 0;
