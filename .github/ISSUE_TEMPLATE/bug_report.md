@@ -1,36 +1,36 @@
 ---
-name: Reporte de bug
-about: Algo no funciona como se esperaba
+name: Bug report
+about: Something isn't working as expected
 title: "[Bug] "
 labels: bug
 assignees: ''
 ---
 
-## Descripción
+## Description
 
-<!-- Qué pasó y qué esperabas que pasara. -->
+<!-- What happened and what did you expect to happen. -->
 
-## Pasos para reproducir
+## Steps to reproduce
 
 1. 
 2. 
 3. 
 
-## Página afectada
+## Affected page
 
-<!-- URL (si es pública) o descripción de la página. -->
+<!-- URL (if public) or description of the page. -->
 
-## Captura / error
+## Screenshot / error
 
-<!-- Pega aquí la captura o el mensaje de error. -->
+<!-- Paste the screenshot or error message here. -->
 
-## Entorno
+## Environment
 
-- Edge (versión): 
-- Sistema operativo: 
-- Versión de la extensión: 
-- Modo de recorrido usado (Automático / Rápido / Por scroll / Visible): 
+- Edge (version): 
+- Operating system: 
+- Extension version: 
+- Walk mode used (Automatic / Fast / Scroll / Visible): 
 
-## Información adicional
+## Additional information
 
-<!-- Cualquier detalle extra. -->
+<!-- Any extra detail. -->

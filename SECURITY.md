@@ -1,24 +1,24 @@
-# Política de seguridad
+# Security policy
 
-## Reportar una vulnerabilidad
+## Reporting a vulnerability
 
-Si encuentras una vulnerabilidad de seguridad en Full Page Shot, **no abras un issue público**. En su lugar:
+If you find a security vulnerability in Full Page Shot, **do not open a public issue**. Instead:
 
-1. Ve a la pestaña **Security** del repositorio en GitHub.
-2. Pulsa **Report a vulnerability** (GitHub Private Vulnerability Reporting).
-3. Describe el problema, los pasos para reproducirlo y el impacto.
+1. Go to the repository's **Security** tab on GitHub.
+2. Click **Report a vulnerability** (GitHub Private Vulnerability Reporting).
+3. Describe the problem, the steps to reproduce it and its impact.
 
-Responderé lo antes posible y coordinaremos la publicación del fix.
+I'll respond as soon as possible and coordinate the fix release.
 
-## Alcance
+## Scope
 
-- El permiso `debugger` es inherente a la funcionalidad: la extensión necesita acceso al DevTools Protocol para capturar la página completa. Eso no es una vulnerabilidad.
-- La extensión no envía datos a servidores externos: toda la captura y el guardado ocurren localmente.
-- La extensión no solicita `host_permissions`: la URL y el título se leen por CDP.
+- The `debugger` permission is inherent to the functionality: the extension needs access to the DevTools Protocol to capture the full page. That is not a vulnerability.
+- The extension does not send data to external servers: all capture and saving happens locally.
+- The extension does not request `host_permissions`: the URL and title are read via CDP.
 
-## Versiones soportadas
+## Supported versions
 
-| Versión | Soportada |
+| Version | Supported |
 | --- | --- |
-| 1.x (actual) | ✅ |
+| 1.x (current) | ✅ |
 | < 1.0 | ❌ |

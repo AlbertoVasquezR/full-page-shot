@@ -1,14 +1,14 @@
-# Contribuir a Full Page Shot
+# Contributing to Full Page Shot
 
-¡Gracias por tu interés! Este documento explica cómo contribuir.
+Thanks for your interest! This document explains how to contribute.
 
-## Requisitos
+## Requirements
 
 - Node.js 18+
-- Microsoft Edge (para las pruebas de extremo a extremo)
+- Microsoft Edge (for end-to-end tests)
 - Git
 
-## Configuración del entorno
+## Environment setup
 
 ```powershell
 git clone https://github.com/AlbertoVasquezR/full-page-shot.git
@@ -17,52 +17,52 @@ npm install
 npm run build
 ```
 
-Carga la extensión en Edge desde `edge://extensions/` → **Modo de desarrollador** → **Cargar descomprimida** → selecciona `dist/`.
+Load the extension in Edge from `edge://extensions/` → **Developer mode** → **Load unpacked** → select `dist/`.
 
-## Flujo de trabajo
+## Workflow
 
-1. Crea una rama: `git checkout -b feat/mi-mejora`
-2. Haz tus cambios.
-3. Verifica tipos y build: `npm run check`
-4. Ejecuta las pruebas:
-   - `node tools/smoke-test.mjs` (extremo a extremo)
-   - `node tools/verify-clipboard.mjs` (portapapeles)
-5. Haz commit con un mensaje claro.
-6. Abre un Pull Request.
+1. Create a branch: `git checkout -b feat/my-improvement`
+2. Make your changes.
+3. Verify types and build: `npm run check`
+4. Run the tests:
+   - `node tools/smoke-test.mjs` (end-to-end)
+   - `node tools/verify-clipboard.mjs` (clipboard)
+5. Commit with a clear message.
+6. Open a Pull Request.
 
-## Convenciones de código
+## Code conventions
 
-- **TypeScript estricto** (`strict: true`), sin JavaScript plano.
-- **esbuild** como bundler único.
-- Comentarios y mensajes al usuario en **español**.
-- Nombres de funciones/variables en **camelCase** en inglés (estilo TS).
-- No añadir `host_permissions` ni content scripts: la captura se hace por CDP.
-- Si añades una opción nueva: actualiza `types.ts`, `settings.ts`, `options.html/.ts`, el popup si aplica, y el README.
+- **Strict TypeScript** (`strict: true`), no plain JavaScript.
+- **esbuild** as the only bundler.
+- Comments and user-facing messages in **Spanish**.
+- Function/variable names in **camelCase** English (TypeScript style).
+- Don't add `host_permissions` or content scripts: capture is done via CDP.
+- If you add a new option: update `types.ts`, `settings.ts`, `options.html/.ts`, the popup if applicable, and the README.
 
-## Pruebas
+## Tests
 
-- `npm run typecheck` — solo tipos.
-- `npm run check` — tipos + build.
-- `node tools/smoke-test.mjs` — lanza Edge real, captura páginas largas, comprueba PNG/JPEG.
-  - `--include-segments` añade escenarios de 65 000 px y scroll de 20 000 px.
-  - `--only=scroll` filtra por nombre.
-  - `--keep` conserva las descargas.
-- `node tools/verify-clipboard.mjs` — verifica que el portapapeles recibe una imagen PNG real.
+- `npm run typecheck` — types only.
+- `npm run check` — types + build.
+- `node tools/smoke-test.mjs` — launches real Edge, captures long pages, checks PNG/JPEG.
+  - `--include-segments` adds 65,000 px and 20,000 px scroll scenarios.
+  - `--only=scroll` filters by name.
+  - `--keep` keeps the downloads.
+- `node tools/verify-clipboard.mjs` — verifies the clipboard really receives a PNG image.
 
 ## Commits
 
-- Mensajes descriptivos en español o inglés.
-- **No añadas co-autoría de IA** (sin trailers `Co-authored-by` de modelos).
-- Un commit por cambio lógico.
+- Descriptive messages in Spanish or English.
+- **Don't add AI co-authorship** (no `Co-authored-by` trailers from models).
+- One commit per logical change.
 
-## Reportar bugs
+## Reporting bugs
 
-Abre un issue con:
-- Pasos para reproducir.
-- Página afectada (URL si es pública).
-- Salida de la consola (si aplica).
-- Versión de Edge y del sistema operativo.
+Open an issue with:
+- Steps to reproduce.
+- Affected page (URL if public).
+- Console output (if applicable).
+- Edge version and operating system.
 
-## Código de conducta
+## Code of conduct
 
-Sé respetuoso y constructivo. Este es un proyecto personal; las críticas técnicas son bienvenidas, los ataques personales no.
+Be respectful and constructive. This is a personal project; technical criticism is welcome, personal attacks are not.

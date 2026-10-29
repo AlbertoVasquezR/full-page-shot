@@ -1,23 +1,23 @@
 ---
-name: Solicitud de funcionalidad
-about: Propón una idea o mejora
+name: Feature request
+about: Propose an idea or improvement
 title: "[Feature] "
 labels: enhancement
 assignees: ''
 ---
 
-## ¿Qué te gustaría?
+## What would you like?
 
-<!-- Describe la funcionalidad que te gustaría tener. -->
+<!-- Describe the feature you'd like to have. -->
 
-## ¿Por qué es útil?
+## Why is it useful?
 
-<!-- Qué problema resuelve o qué caso de uso cubre. -->
+<!-- What problem it solves or what use case it covers. -->
 
-## Alternativas consideradas
+## Alternatives considered
 
-<!-- Otras formas de resolverlo que hayas pensado. -->
+<!-- Other ways you've thought of to solve it. -->
 
-## Información adicional
+## Additional information
 
-<!-- Mockups, referencias, etc. -->
+<!-- Mockups, references, etc. -->

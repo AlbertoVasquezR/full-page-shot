@@ -1,21 +1,21 @@
-## ¿Qué cambia?
+## What changes?
 
-<!-- Describe brevemente el cambio. -->
+<!-- Briefly describe the change. -->
 
-## ¿Por qué?
+## Why?
 
-<!-- Motivación o issue relacionado. Referencia: Closes # -->
+<!-- Motivation or related issue. Reference: Closes # -->
 
-## Cómo probarlo
+## How to test it
 
-- [ ] `npm run check` pasa
-- [ ] `node tools/smoke-test.mjs` pasa
-- [ ] `node tools/verify-clipboard.mjs` pasa (si toca portapapeles)
-- [ ] Probado manualmente en Edge
+- [ ] `npm run check` passes
+- [ ] `node tools/smoke-test.mjs` passes
+- [ ] `node tools/verify-clipboard.mjs` passes (if touching the clipboard)
+- [ ] Tested manually in Edge
 
 ## Checklist
 
-- [ ] El código sigue las convenciones del proyecto (TypeScript estricto, español en mensajes).
-- [ ] Actualicé el README si añadí opciones o cambié comportamiento.
-- [ ] No añadí `host_permissions` ni content scripts.
-- [ ] Sin co-autoría de IA en los commits.
+- [ ] The code follows the project conventions (strict TypeScript, Spanish in messages).
+- [ ] I updated the README if I added options or changed behavior.
+- [ ] I didn't add `host_permissions` or content scripts.
+- [ ] No AI co-authorship in the commits.

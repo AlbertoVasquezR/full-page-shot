@@ -12,243 +12,242 @@
 </p>
 
 <p align="center">
-  <strong>Captura toda la página, por larga que sea, en un solo clic.</strong><br/>
-  <sub>PNG o JPEG · Portapapeles · Carpeta de destino · Modo automático inteligente</sub>
+  <strong>Capture the whole page, no matter how long, in a single click.</strong><br/>
+  <sub>PNG or JPEG · Clipboard · Destination folder · Smart automatic mode</sub>
 </p>
 
 <p align="center">
-  <a href="#-instalación">Instalación</a> ·
-  <a href="#-uso">Uso</a> ·
-  <a href="#-características">Características</a> ·
-  <a href="#-problemas-frecuentes">FAQ</a> ·
-  <a href="#-licencia">Licencia</a>
+  <a href="#-installation">Installation</a> ·
+  <a href="#-usage">Usage</a> ·
+  <a href="#-features">Features</a> ·
+  <a href="#-frequent-issues">FAQ</a> ·
+  <a href="#-license">License</a>
 </p>
 
 ---
 
-## 🎯 ¿Qué es Full Page Shot?
+## 🎯 What is Full Page Shot?
 
-Una extensión para **Microsoft Edge** que captura la **página completa** (todo el scroll, sin importar la longitud) y la guarda como **PNG** o **JPEG**. Escrita en **TypeScript** y empaquetada con **esbuild**.
+A **Microsoft Edge** extension that captures the **entire page** (the whole scroll, regardless of length) and saves it as **PNG** or **JPEG**. Written in **TypeScript** and bundled with **esbuild**.
 
-A diferencia de las capturas normales del navegador, que solo toman lo visible, Full Page Shot usa el **Chrome DevTools Protocol** para renderizar la página a su tamaño real y devolver **una sola imagen sin costuras**. Y cuando el contenido solo aparece al desplazarse, detecta el caso y recorre la página pantalla a pantalla.
-
----
-
-## ✨ Características
-
-### Captura
-- 📄 **Captura completa real** con `Page.captureScreenshot` + `captureBeyondViewport`.
-- 🧠 **Modo Automático** (por defecto): analiza la página y decide si conviene recorrerla por scroll. Detecta carga diferida, `content-visibility: auto`, animaciones de entrada, contenedores con scroll interno, listas virtualizadas, iframes pesados, scroll-snap, parallax, imágenes de fondo diferidas y cambios por `IntersectionObserver`.
-- 📜 **Modo Por scroll**: baja la vista pantalla a pantalla y une las capturas. Para contenido que solo aparece al desplazarse.
-- ⚡ **Modo Rápido**: una sola pasada, sin desplazar la página.
-- 👁️ **Modo Visible**: captura solo lo que se ve ahora (ideal para estados con hover o menús abiertos).
-- 📏 **Páginas gigantes**: si superan el límite de la GPU se capturan por segmentos y se unen en un lienzo, con reducción automática si hace falta (etiqueta `reducida`).
-- 🐢 **Carga diferida (lazy loading)**: opción para recorrer la página antes de capturar en modo rápido.
-- ♾️ **Scroll infinito**: opción para seguir capturando mientras la página siga creciendo (feeds, listas que cargan más al bajar).
-- 🍪 **Cierre de banners de cookies** antes de capturar (OneTrust, Cookiebot, Didomi, Quantcast…).
-- 🧹 **Preparación de la página**: espera fuentes, pausa animaciones/transiciones, fuerza `content-visibility: visible` y elimina `contain` que podría ocultar contenido. Todo se restaura al terminar.
-- 🎨 **Repintado previo**: mejora la captura de Canvas/WebGL y animaciones.
-- 📐 **Páginas con scroll interno**: detecta y recorre contenedores desplazables (paneles con `html { overflow: hidden }`).
-
-### Salida
-- 🖼️ **PNG y JPEG** con control de calidad.
-- 📋 **Copiar al portapapeles** como imagen real (no texto ni HTML).
-- 📁 **Carpeta de destino**: subcarpeta dentro de Descargas o diálogo nativo de Windows.
-- 🔔 **Notificación al terminar**: al pulsarla se abre la imagen capturada.
-- ⌨️ **Atajos de teclado**: `Ctrl+Shift+S` (página completa) y `Ctrl+Shift+V` (solo visible).
-- ⏱️ **Retardo configurable** (0–10 s) para capturar estados con hover.
-- 🕘 **Historial** de las últimas capturas en el popup.
-- 🌙 **Tema claro/oscuro** automático.
-
-> **¿Cuál elijo?** Por defecto **Automático** ya decide por ti. Si quieres forzar un comportamiento concreto, cámbialo en el popup o en Opciones.
+Unlike normal browser screenshots, which only capture what's visible, Full Page Shot uses the **Chrome DevTools Protocol** to render the page at its real size and return **a single seamless image**. And when content only appears on scroll, it detects the case and walks the page screen by screen.
 
 ---
 
-## 🧩 Cómo funciona el portapapeles
+## ✨ Features
 
-Chromium **solo** admite copiar una imagen por código con la API asíncrona del portapapeles, y esa API exige que el documento **tenga el foco**. Por eso:
+### Capture
+- 📄 **Real full-page capture** with `Page.captureScreenshot` + `captureBeyondViewport`. One image, no seams.
+- 🧠 **Automatic mode** (default): analyzes the page and decides whether to scroll through it. Detects lazy loading, `content-visibility: auto`, entrance animations, scrollable containers, virtualized lists, heavy iframes, scroll-snap, parallax, lazy background images and `IntersectionObserver` changes.
+- 📜 **Scroll mode**: walks the view screen by screen and stitches the captures. For content that only appears on scroll.
+- ⚡ **Fast mode**: single pass, without scrolling the page.
+- 👁️ **Visible mode**: captures only what's on screen right now (ideal for hover states or open menus).
+- 📏 **Huge pages**: if they exceed the GPU surface limit, they're captured in segments and stitched on a canvas, with automatic downscaling when needed (tagged `reduced`).
+- 🐢 **Lazy loading**: option to walk the page before capturing in fast mode.
+- ♾️ **Infinite scroll**: option to keep capturing while the page keeps growing (feeds, lists that load more on scroll).
+- 🍪 **Cookie banner dismissal** before capture (OneTrust, Cookiebot, Didomi, Quantcast…).
+- 🧹 **Page preparation**: waits for fonts, pauses animations/transitions, forces `content-visibility: visible` and removes `contain` that could hide content. Everything is restored at the end.
+- 🎨 **Pre-capture repaint**: improves capture of Canvas/WebGL and animations.
+- 📐 **Internal scroll pages**: detects and walks scrollable containers (panels with `html { overflow: hidden }`).
 
-1. La copia la hace el **popup**, que ya está enfocado mientras ves el progreso.
-2. Si cierras el popup antes de que acabe, la extensión abre una **ventana auxiliar diminuta y enfocada** que copia y se cierra sola.
+### Output
+- 🖼️ **PNG and JPEG** with quality control.
+- 📋 **Copy to clipboard** as a real image (not text or HTML).
+- 📁 **Destination folder**: subfolder inside Downloads or the native Windows dialog.
+- 🔔 **Notification on completion**: clicking it opens the captured image.
+- ⌨️ **Keyboard shortcuts**: `Ctrl+Shift+S` (full page) and `Ctrl+Shift+V` (visible only).
+- ⏱️ **Configurable delay** (0–10 s) to capture hover states or open menus.
+- 🕘 **History** of the last captures in the popup.
+- 🌙 **Automatic light/dark theme**.
 
-Un documento *offscreen* no sirve aquí: nunca puede tener foco, y el viejo `document.execCommand("copy")` solo deja texto y HTML en el portapapeles, no una imagen. (Véanse chromium/issues/40252021 y 40288517.)
+> **Which one should I pick?** By default **Automatic** decides for you. If you want to force a specific behavior, change it in the popup or in Options.
 
 ---
 
-## 🚀 Instalación
+## 🧩 How the clipboard works
+
+Chromium **only** supports copying an image from code through the asynchronous Clipboard API, and that API requires the document to **have focus**. That's why:
+
+1. The copy is performed by the **popup**, which is already focused while you watch progress.
+2. If you close the popup before it finishes, the extension opens a **tiny focused helper window** that copies and closes itself.
+
+An *offscreen* document is useless here: it can never gain focus, and the old `document.execCommand("copy")` only leaves text and HTML on the clipboard, not an image. (See chromium/issues/40252021 and 40288517.)
+
+---
+
+## 🚀 Installation
 
 ```powershell
 npm install
-npm run build    # compila a dist/
+npm run build    # compiles to dist/
 ```
 
-Luego, en Edge:
+Then, in Edge:
 
-1. Abre `edge://extensions/`.
-2. Activa **Modo de desarrollador** (abajo a la izquierda).
-3. Pulsa **Cargar descomprimida** y elige la carpeta **`dist`** (no la raíz del proyecto).
-4. Fija la extensión en la barra con el icono de pieza de puzzle.
+1. Open `edge://extensions/`.
+2. Enable **Developer mode** (bottom left).
+3. Click **Load unpacked** and select the **`dist`** folder (not the project root).
+4. Pin the extension to the toolbar with the puzzle-piece icon.
 
-> Al instalar, Edge avisará que la extensión "puede leer y cambiar todos tus datos".
-> Es el aviso obligatorio del permiso `debugger`, que es justo el que permite la captura
-> completa. Mientras se toma una captura aparece una barra amarilla de "está depurando este
-> navegador": es normal y desaparece al terminar.
+> On install, Edge will warn that the extension "can read and change all your data".
+> That's the mandatory notice for the `debugger` permission, which is exactly what enables
+> true full-page capture. While a capture runs you'll see a yellow "is debugging this browser"
+> bar: that's normal and disappears when it finishes.
 
 ---
 
-## 🎯 Uso
+## 🎯 Usage
 
-1. Abre la página que quieras capturar (una normal, `http` o `https`).
-2. Pulsa el icono de la extensión.
-3. Elige el **formato** y el **recorrido de la página** (Automático / Rápido / Por scroll / Visible).
-4. Pulsa **Capturar página completa** (o usa `Ctrl+Shift+S`).
-5. La imagen se guarda y, si lo activaste, se copia al portapapeles.
+1. Open the page you want to capture (a normal `http` or `https` page).
+2. Click the extension icon.
+3. Choose the **format** and the **page walk** (Automatic / Fast / Scroll / Visible).
+4. Click **Capture full page** (or press `Ctrl+Shift+S`).
+5. The image is saved and, if enabled, copied to the clipboard.
 
 ---
 
 ## 📜 Scripts
 
-| Comando | Qué hace |
+| Command | What it does |
 | --- | --- |
-| `npm run build` | Compila `src/` a `dist/` y copia `public/`. |
-| `npm run dev` | Lo mismo en modo vigilancia (recompila al guardar). |
-| `npm run typecheck` | Solo comprueba tipos, sin generar archivos. |
+| `npm run build` | Compiles `src/` to `dist/` and copies `public/`. |
+| `npm run dev` | Same in watch mode (recompiles on save). |
+| `npm run typecheck` | Type-checks only, no files generated. |
 | `npm run check` | `typecheck` + `build`. |
-| `npm run icons` | Regenera los iconos PNG sin dependencias. |
-| `node tools/smoke-test.mjs` | Prueba de extremo a extremo real: lanza Edge, captura páginas largas y comprueba el PNG/JPEG descargado, en modo rápido y por scroll. Con `--include-segments` añade una página de 65 000 px y una de scroll de 20 000 px. Con `--only=scroll` filtra por nombre y con `--keep` conserva las descargas. |
-| `node tools/verify-clipboard.mjs` | Comprueba que el portapapeles recibe una imagen PNG real (lee el portapapeles de vuelta), por los dos caminos: popup y ventana auxiliar. |
+| `npm run icons` | Regenerates the PNG icons with no dependencies. |
+| `node tools/smoke-test.mjs` | Real end-to-end test: launches Edge, captures long pages and checks the downloaded PNG/JPEG, in fast and scroll modes. With `--include-segments` adds a 65,000 px page and a 20,000 px scroll page. With `--only=scroll` filters by name and with `--keep` keeps the downloads. |
+| `node tools/verify-clipboard.mjs` | Checks that the clipboard really receives a PNG image (reads the clipboard back), through both paths: popup and helper window. |
 
-Tras cambiar código hay que pulsar **Recargar** en `edge://extensions/`.
+After changing code, click **Reload** on `edge://extensions/`.
 
 ---
 
-## 📂 Estructura
+## 📂 Structure
 
 ```
 full-page-shot/
 ├── assets/
-│   └── banner.svg          banner del README
-├── public/                 recursos estáticos (se copian tal cual a dist/)
+│   └── banner.svg          README banner
+├── public/                 static assets (copied as-is to dist/)
 │   ├── manifest.json       Manifest V3
-│   ├── popup.html/.css     interfaz del botón
-│   ├── options.html/.css   página de opciones
-│   ├── helper.html         ventana auxiliar que copia al portapapeles
-│   └── icons/              iconos generados
+│   ├── popup.html/.css     button UI
+│   ├── options.html/.css   options page
+│   ├── helper.html         helper window that copies to the clipboard
+│   └── icons/              generated icons
 ├── src/
-│   ├── background.ts       service worker: orquesta la captura, el copiado y la descarga
-│   ├── capture.ts          lógica del DevTools Protocol (medir, capturar, unir)
-│   ├── cdp.ts              envoltura tipada de chrome.debugger
-│   ├── popup.ts            interfaz rápida
-│   ├── options.ts          página de opciones
-│   ├── helper.ts           ventana auxiliar (respaldo del portapapeles)
-│   ├── clipboard.ts        escritura de imágenes en el portapapeles
-│   ├── settings.ts         lectura/escritura de preferencias
-│   ├── types.ts            tipos y mensajes compartidos
-│   └── util.ts             base64, nombres de archivo, formato de tamaños
+│   ├── background.ts       service worker: orchestrates capture, copying and download
+│   ├── capture.ts          DevTools Protocol logic (measure, capture, stitch)
+│   ├── cdp.ts              typed wrapper around chrome.debugger
+│   ├── popup.ts            quick UI
+│   ├── options.ts          options page
+│   ├── helper.ts           helper window (clipboard fallback)
+│   ├── clipboard.ts        image writing to the clipboard
+│   ├── settings.ts         reading/writing preferences
+│   ├── types.ts            shared types and messages
+│   └── util.ts             base64, file names, size formatting
 ├── tools/
-│   ├── make-icons.mjs      generador de iconos (PNG propio, sin librerías)
-│   ├── smoke-test.mjs      prueba de extremo a extremo
-│   └── verify-clipboard.mjs verificación del portapapeles
-├── build.mjs               script de esbuild + copia de estáticos
+│   ├── make-icons.mjs      icon generator (own PNG, no libraries)
+│   ├── smoke-test.mjs      end-to-end test
+│   └── verify-clipboard.mjs clipboard verification
+├── build.mjs               esbuild script + static copy
 └── tsconfig.json
 ```
 
 ---
 
-## 🔐 Permisos y por qué
+## 🔐 Permissions and why
 
-| Permiso | Motivo |
+| Permission | Reason |
 | --- | --- |
-| `debugger` | Único modo de capturar la página completa de verdad. |
-| `downloads` | Guardar el archivo donde elijas. |
-| `storage` | Guardar tus preferencias (`storage.sync`). |
-| `clipboardWrite` | Copiar la imagen al portapapeles sin pedir gesto en cada captura. |
-| `notifications` | Avisarte cuando termina. |
-| `activeTab` | Respaldo de captura para páginas restringidas. |
-| `scripting` | Inyectar scripts de preparación (cookies, fuentes, etc.). |
+| `debugger` | The only way to truly capture the full page. |
+| `downloads` | Save the file where you choose. |
+| `storage` | Store your preferences (`storage.sync`). |
+| `clipboardWrite` | Copy the image to the clipboard without a gesture per capture. |
+| `notifications` | Notify you when it's done. |
+| `activeTab` | Fallback capture for restricted pages. |
+| `scripting` | Inject preparation scripts (cookies, fonts, etc.). |
 
-**No pide acceso a sitios web** (`host_permissions`): la URL y el título se leen por el
-protocolo DevTools, no inyectando código.
-
----
-
-## ⚠️ Límites reales (esto no lo puede saltar ninguna extensión)
-
-- **Páginas internas y PDFs**: cuando el depurador está bloqueado, la extensión intenta al menos una captura de la vista visible con `chrome.tabs.captureVisibleTab` (requiere hacer clic en el icono sobre esa página). No es captura completa, pero evita quedarse sin nada. También reintenta automáticamente si una captura falla.
-- **PDFs** abiertos en el visor interno: bloqueado por Edge; respaldo de vista visible.
-- **Contenido de iframes de otros dominios** puede salir en blanco.
-- **Canvas/WebGL**: mejorado con repintado previo, pero algunos contextos no se renderizan.
-- **DevTools abierto** en la misma pestaña: solo se admite un depurador a la vez. Ciérralo.
-- **Políticas de empresa** pueden bloquear la captura (`Screenshot capture is restricted by policy`).
-- **Captura de una sola toma**: `chrome.debugger` rechaza capturas de más de ~16 000 px de alto, así que las páginas más largas se capturan **por segmentos** y se unen.
-- **Páginas de más de ~30 000 px de alto**: se reducen proporcionalmente para caber en el lienzo del navegador (la etiqueta `reducida` lo indica).
-- **Copiar al portapapeles** necesita una página de la extensión con foco; si cierras el popup durante la captura, se usa una ventana auxiliar.
-- **Modo por scroll**: más lento (una captura por pantalla). Por defecto se detiene al final que tenía la página al empezar; con **Seguir el scroll infinito** activado, sigue capturando mientras la página siga creciendo (feeds, listas que cargan más al bajar), con un tope de seguridad. Captura fielmente lo que solo aparece al desplazarse.
-- **Páginas con scroll interno**: algunas aplicaciones (paneles con `html { overflow: hidden }` y el contenido desplazándose dentro del `body` o de un contenedor) se capturan midiendo y recorriendo ese contenedor.
+**No site access is requested** (`host_permissions`): the URL and title are read through the DevTools Protocol, not by injecting code.
 
 ---
 
-## 🛠️ Problemas frecuentes
+## ⚠️ Real limits (no extension can bypass these)
 
-| Síntoma | Solución |
+- **Internal pages and PDFs**: when the debugger is blocked, the extension tries at least a visible-viewport capture with `chrome.tabs.captureVisibleTab` (requires clicking the icon on that page). Not a full capture, but better than nothing. It also retries automatically if a capture fails.
+- **PDFs** opened in the internal viewer: blocked by Edge; visible-viewport fallback.
+- **Cross-origin iframe content** may come out blank.
+- **Canvas/WebGL**: improved with the pre-capture repaint, but some contexts don't render.
+- **DevTools open** on the same tab: only one debugger at a time. Close it.
+- **Company policies** may block capture (`Screenshot capture is restricted by policy`).
+- **Single-shot capture**: `chrome.debugger` rejects captures taller than ~16,000 px, so longer pages are captured **in segments** and stitched.
+- **Pages taller than ~30,000 px**: downscaled proportionally to fit the browser canvas (the `reduced` tag indicates it).
+- **Copy to clipboard** needs a focused extension page; if you close the popup during capture, a helper window is used.
+- **Scroll mode**: slower (one capture per screen). By default it stops at the page's end when capture started; with **Follow infinite scroll** enabled, it keeps capturing while the page keeps growing (feeds, lists that load more on scroll), with a safety cap. It faithfully captures what only appears on scroll.
+- **Internal scroll pages**: some apps (panels with `html { overflow: hidden }` and content scrolling inside `body` or a container) are captured by measuring and walking that container.
+
+---
+
+## 🛠️ Frequent issues
+
+| Symptom | Solution |
 | --- | --- |
-| "Ya hay un depurador conectado" | Cierra DevTools (F12) en esa pestaña. |
-| "Edge no permite capturar esta página" | Estás en una página interna. Usa una web normal o haz clic en el icono sobre esa página para al menos capturar la vista visible. |
-| La captura sale en blanco | Activa *Recorrer la página antes de capturar* en Opciones. |
-| Faltan bloques o salen repetidos | Cambia el **recorrido** a *Por scroll* (contenido que solo aparece al bajar). |
-| Cambié el código y no pasa nada | Pulsa **Recargar** en `edge://extensions/`. |
+| "A debugger is already attached" | Close DevTools (F12) on that tab. |
+| "Edge won't capture this page" | You're on an internal page. Use a normal website, or click the icon on that page to at least capture the visible viewport. |
+| Blank capture | Enable *Walk the page before capturing* in Options. |
+| Missing or repeated blocks | Switch the **walk** to *Scroll* (content that only appears on scroll). |
+| Changed the code and nothing happens | Click **Reload** on `edge://extensions/`. |
 
 ---
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
-¡Las contribuciones son bienvenidas! Si quieres mejorar Full Page Shot:
+Contributions are welcome! To improve Full Page Shot:
 
-1. **Haz un fork** del repositorio.
-2. **Crea una rama** para tu cambio: `git checkout -b feat/mi-mejora`.
-3. **Instala dependencias y compila**: `npm install && npm run check`.
-4. **Prueba tus cambios**:
-   - `npm run typecheck` (tipos).
-   - `node tools/smoke-test.mjs` (prueba de extremo a extremo real).
-   - `node tools/verify-clipboard.mjs` (portapapeles).
-5. **Haz commit** con un mensaje claro y sin co-autoría de IA.
-6. **Abre un Pull Request** describiendo el cambio y cómo probarlo.
+1. **Fork** the repository.
+2. **Create a branch** for your change: `git checkout -b feat/my-improvement`.
+3. **Install dependencies and build**: `npm install && npm run check`.
+4. **Test your changes**:
+   - `npm run typecheck` (types).
+   - `node tools/smoke-test.mjs` (real end-to-end test).
+   - `node tools/verify-clipboard.mjs` (clipboard).
+5. **Commit** with a clear message and no AI co-authorship.
+6. **Open a Pull Request** describing the change and how to test it.
 
-### Convenciones
+### Conventions
 
-- **TypeScript estricto**, sin JavaScript plano.
-- **esbuild** como bundler; no añadas otros bundlers.
-- Mantén el estilo del código existente (nombres en español en comentarios, mensajes al usuario en español).
-- No añadas `host_permissions` ni inyectes content scripts: la captura se hace por CDP.
-- Si añades una opción nueva, actualiza `types.ts`, `settings.ts`, `options.html/.ts` y el README.
-- Los mensajes de commit deben ser descriptivos; evita trailers de co-autoría automatizados.
+- **Strict TypeScript**, no plain JavaScript.
+- **esbuild** as the only bundler; don't add others.
+- Keep the existing code style (Spanish comments and user-facing messages, English identifiers in camelCase).
+- Don't add `host_permissions` or content scripts: capture is done via CDP.
+- If you add a new option, update `types.ts`, `settings.ts`, `options.html/.ts`, the popup if applicable, and the README.
+- Commit messages should be descriptive; avoid automated co-authorship trailers.
 
-### Ideas para contribuir
+### Ideas to contribute
 
-- Soporte para capturar un área seleccionada.
-- Mejorar la detección automática (nuevos patrones de carga diferida).
-- Atajos de teclado configurables.
-- Internacionalización (i18n).
-- Tests para nuevas rutas de captura.
+- Support for capturing a selected area.
+- Improve automatic detection (new lazy-loading patterns).
+- Configurable keyboard shortcuts.
+- Internationalization (i18n).
+- Tests for new capture paths.
 
-¿Dudas o sugerencias? Abre un **issue** en el repositorio.
-
----
-
-## 🔒 Seguridad
-
-Si encuentras una vulnerabilidad, repórtala de forma privada desde la pestaña **Security** del repositorio (ver [`SECURITY.md`](./SECURITY.md)). No abras un issue público.
+Questions or suggestions? Open an **issue** in the repository.
 
 ---
 
-## 📝 Licencia
+## 🔒 Security
 
-Este proyecto se distribuye bajo la **licencia MIT**, es decir, uso libre: puedes usarlo, copiarlo, modificarlo, fusionarlo, publicarlo, distribuirlo, sublicenciarlo y/o venderlo, siempre que mantengas el aviso de copyright y la licencia. Consulta el archivo [`LICENSE`](./LICENSE) para el texto completo.
+If you find a vulnerability, report it privately from the repository's **Security** tab (see [`SECURITY.md`](./SECURITY.md)). Don't open a public issue.
 
-Las dependencias (esbuild, typescript, @types/chrome, puppeteer-core) se rigen por sus propias licencias.
+---
+
+## 📝 License
+
+This project is distributed under the **MIT License**, i.e. free use: you may use, copy, modify, merge, publish, distribute, sublicense and/or sell it, as long as you keep the copyright notice and the license. See the [`LICENSE`](./LICENSE) file for the full text.
+
+Dependencies (esbuild, typescript, @types/chrome, puppeteer-core) are governed by their own licenses.
 
 ---
 
 <p align="center">
-  <sub>Hecho con ☕ para capturar páginas largas sin complicaciones.</sub>
+  <sub>Made with ☕ to capture long pages without complications.</sub>
 </p>
