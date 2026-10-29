@@ -36,7 +36,7 @@ export async function updateSettings(patch: Partial<Settings>): Promise<Settings
   return getSettings();
 }
 
-/** Se usa en las paginas de UI para reaccionar a cambios hechos desde otra vista. */
+/** Used in UI pages to react to changes made from another view. */
 export function onSettingsChanged(listener: (settings: Settings) => void): void {
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "sync") return;

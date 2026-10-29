@@ -141,7 +141,7 @@ saveButton.addEventListener("click", () => {
 
 void getSettings().then(applySettings);
 
-// Ctrl/Cmd + S guarda desde cualquier campo.
+// Ctrl/Cmd + S saves from any field.
 document.addEventListener("keydown", (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
     event.preventDefault();

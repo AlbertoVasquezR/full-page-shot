@@ -136,7 +136,7 @@ async function renderRecent(): Promise<void> {
       const name = document.createElement("span");
       name.className = "recent__name";
       const fullName = item.displayName ?? "captura";
-      // Se trunca para que scrollWidth no empuje el ancho del popup.
+      // Truncated so scrollWidth doesn't push the popup wider.
       name.textContent = fullName.length > 34 ? fullName.slice(0, 31) + "…" : fullName;
       name.title = fullName;
       const meta = document.createElement("span");
@@ -233,8 +233,8 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
   if (!event || event.target !== "popup") return undefined;
 
   if (event.type === "COPY") {
-    // El popup esta enfocado mientras el usuario mira el progreso: es el mejor
-    // sitio para escribir la imagen en el portapapeles.
+    // The popup is focused while the user watches progress: the best place to
+    // write the image to the clipboard.
     void writeImageToClipboard(event.base64, event.mimeType).then(sendResponse);
     return true;
   }

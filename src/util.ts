@@ -28,7 +28,7 @@ export async function blobToBase64(blob: Blob): Promise<string> {
   return bytesToBase64(new Uint8Array(buffer));
 }
 
-/** El base64 crece 4/3 respecto al binario; sirve para informar el peso al usuario. */
+/** Base64 grows 4/3 relative to the binary; used to report the size to the user. */
 export function estimatedBytes(base64: string): number {
   return Math.floor((base64.length * 3) / 4);
 }
@@ -53,13 +53,13 @@ export function hostFromUrl(url: string): string {
   try {
     const parsed = new URL(url);
     const host = parsed.hostname || parsed.protocol.replace(":", "");
-    return sanitizeName(host) || "pagina";
+    return sanitizeName(host) || "page";
   } catch {
     return "pagina";
   }
 }
 
-/** Deja solo caracteres validos para un nombre de archivo en Windows. */
+/** Keeps only characters valid for a Windows file name. */
 export function sanitizeName(value: string): string {
   return value
     .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-")
@@ -67,7 +67,7 @@ export function sanitizeName(value: string): string {
     .slice(0, 80);
 }
 
-/** Limpia la subcarpeta y bloquea rutas absolutas o con "..". */
+/** Cleans the subfolder and blocks absolute paths or "..". */
 export function normalizeSubfolder(value: string): string {
   const parts = value
     .split(/[\\/]+/)

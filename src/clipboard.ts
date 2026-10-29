@@ -2,16 +2,17 @@ import type { ClipboardWriteResult } from "./types";
 import { base64ToBytes, describeError } from "./util";
 
 /**
- * Escritura de imagenes en el portapapeles.
+ * Writing images to the clipboard.
  *
- * Este modulo debe ejecutarse en una pagina de la extension que TENGA EL FOCO
- * (el popup o la ventana auxiliar). La unica forma admitida por Chromium de
- * copiar una imagen por codigo es la API asincrona del portapapeles, y esa API
- * rechaza cualquier documento sin foco con el error "Document is not focused".
+ * This module must run in an extension page that HAS FOCUS (the popup or the
+ * helper window). The only way Chromium allows copying an image from code is the
+ * asynchronous Clipboard API, and that API rejects any unfocused document with
+ * the error "Document is not focused".
  *
- * Un documento offscreen nunca puede tener foco, asi que no sirve para esto;
- * `document.execCommand("copy")` tampoco vale porque solo deja texto y HTML en
- * el portapapeles, no una imagen. Ver chromium/issues/40252021 y 40288517.
+ * An offscreen document can never have focus, so it's useless for this; and
+ * `document.execCommand("copy")` doesn't help either because it only leaves text
+ * and HTML on the clipboard, not an image. See chromium/issues/40252021 and
+ * 40288517.
  */
 
 const PNG_MIME = "image/png";
@@ -37,12 +38,12 @@ async function toPng(blob: Blob): Promise<Blob> {
 
 export async function writeImageToClipboard(base64: string, mimeType: string): Promise<ClipboardWriteResult> {
   if (typeof ClipboardItem === "undefined" || !navigator.clipboard?.write) {
-    return { ok: false, method: "", error: "Este navegador no permite copiar imagenes al portapapeles." };
+    return { ok: false, method: "", error: "Este navegador no permite copiar imágenes al portapapeles." };
   }
 
   try {
     const blob = new Blob([base64ToBytes(base64)], { type: mimeType });
-    // El portapapeles de Windows solo acepta PNG de forma fiable.
+    // The Windows clipboard only reliably accepts PNG.
     const pngBlob = mimeType === PNG_MIME ? blob : await toPng(blob);
     await navigator.clipboard.write([new ClipboardItem({ [PNG_MIME]: pngBlob })]);
     return { ok: true, method: "clipboard-api", error: "" };

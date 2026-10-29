@@ -170,7 +170,7 @@ async function runLazyLoadPass(target: Debuggee): Promise<void> {
   try {
     await evaluate<boolean>(target, LAZY_LOAD_SCRIPT);
   } catch {
-    // Si la pagina bloquea la ejecucion, seguimos con la captura tal cual.
+    // If the page blocks execution, continue with the capture as is.
   }
 }
 
@@ -231,7 +231,7 @@ async function scrollTo(target: Debuggee, y: number): Promise<void> {
       return true;
     })()`);
   } catch {
-    // Si la pagina bloquea la ejecucion, se intenta la captura igualmente.
+    // If the page blocks execution, the capture is still attempted.
   }
 }
 
@@ -256,7 +256,7 @@ async function settle(target: Debuggee): Promise<void> {
   try {
     await evaluate<boolean>(target, SETTLE_SCRIPT);
   } catch {
-    // Si la pagina bloquea la ejecucion, se captura igualmente.
+    // If the page blocks execution, the capture proceeds anyway.
   }
 }
 
@@ -271,19 +271,19 @@ const DETECT_DYNAMIC_SCRIPT = `(async function () {
     var score = 0;
     var signals = [];
 
-    // 1) Imagenes con carga diferida declarada.
+    // 1) Images with declared lazy loading.
     var lazy = document.querySelectorAll(
       'img[loading="lazy"],img[data-src],img[data-srcset],img[data-lazy],img[data-original],img[data-lazy-src],iframe[loading="lazy"],iframe[data-src],source[data-srcset]'
     ).length;
     if (lazy > 0) { score += 3; signals.push('lazy:' + lazy); }
 
-    // 2) Imagenes aun sin cargar (varias, no solo una suelta).
+    // 2) Images still not loaded (several, not just one).
     var pending = 0;
     var images = document.images;
     for (var i = 0; i < images.length; i++) { if (!images[i].complete) pending += 1; }
     if (pending > 3) { score += 1; signals.push('pendientes:' + pending); }
 
-    // 3) Contenido con render diferido por CSS.
+    // 3) Content with deferred rendering via CSS.
     var deferred = 0;
     var all = document.querySelectorAll('body *');
     var limit = Math.min(all.length, 3000);
@@ -298,7 +298,7 @@ const DETECT_DYNAMIC_SCRIPT = `(async function () {
       score += 2; signals.push('reveal');
     }
 
-    // 5) Contenedores que se desplazan por dentro (la pagina real es un div).
+    // 5) Containers that scroll internally (the real page is a div).
     var scrollContainers = 0;
     var nodes = document.querySelectorAll('body *');
     var nlimit = Math.min(nodes.length, 4000);
@@ -311,9 +311,9 @@ const DETECT_DYNAMIC_SCRIPT = `(async function () {
     }
     if (scrollContainers > 0) { score += 3; signals.push('scroll-containers:' + scrollContainers); }
 
-    // 6) Diseño guiado por scroll (snap).
+    // 6) Scroll-driven layout (snap).
     var snap = document.querySelector('[style*="scroll-snap"], [class*="snap"]') ? 1 : 0;
-    // tambien comprobar computed style del html/body y contenedores con snap
+    // also check computed style of html/body and containers with snap
     if (!snap) {
       var snapNodes = document.querySelectorAll('body *');
       var slimit = Math.min(snapNodes.length, 2000);
@@ -324,7 +324,7 @@ const DETECT_DYNAMIC_SCRIPT = `(async function () {
     }
     if (snap > 0) { score += 2; signals.push('scroll-snap'); }
 
-    // 7) Iframes (especialmente los que cargan al desplazarse o son grandes).
+    // 7) Iframes (especially those that load on scroll or are large).
     var iframes = document.querySelectorAll('iframe');
     var heavyIframes = 0;
     for (var f = 0; f < iframes.length; f++) {
@@ -334,8 +334,8 @@ const DETECT_DYNAMIC_SCRIPT = `(async function () {
     }
     if (heavyIframes > 0) { score += 2; signals.push('iframes:' + heavyIframes); }
 
-    // 8) Contenido virtualizado: muchos hijos directos en un contenedor con
-    //    overflow oculto o auto y altura fija (patron de listas virtualizadas).
+    // 8) Virtualized content: many direct children in a container with
+    //    hidden or auto overflow and fixed height (virtualized list pattern).
     var virtualized = 0;
     var vNodes = document.querySelectorAll('body *');
     var vlimit = Math.min(vNodes.length, 2000);
@@ -349,11 +349,11 @@ const DETECT_DYNAMIC_SCRIPT = `(async function () {
     }
     if (virtualized > 0) { score += 3; signals.push('virtualized:' + virtualized); }
 
-    // 9) Imagenes de fondo con carga diferida.
+    // 9) Lazy-loaded background images.
     var lazyBg = document.querySelectorAll('[data-background],[data-bg],[data-lazy-bg],[data-lazy-background]').length;
     if (lazyBg > 0) { score += 2; signals.push('lazy-bg:' + lazyBg); }
 
-    // 10) Comportamiento de scroll suave.
+    // 10) Smooth scroll behavior.
     var smooth = 0;
     try {
       if (getComputedStyle(document.documentElement).scrollBehavior === 'smooth' ||
@@ -361,7 +361,7 @@ const DETECT_DYNAMIC_SCRIPT = `(async function () {
     } catch (e) { smooth = 0; }
     if (smooth > 0) { score += 1; signals.push('smooth-scroll'); }
 
-    // 11) will-change en varios elementos.
+    // 11) will-change on several elements.
     var willChange = 0;
     var wcNodes = document.querySelectorAll('body *');
     var wlimit = Math.min(wcNodes.length, 2000);
@@ -380,15 +380,15 @@ const DETECT_DYNAMIC_SCRIPT = `(async function () {
     }
     if (parallax > 0) { score += 2; signals.push('parallax:' + parallax); }
 
-    // Si las heurísticas ya deciden, no hace falta la prueba de comportamiento.
+    // If the heuristics already decide, the behavioral test is unnecessary.
     if (score >= 3) {
       return { scroll: true, score: score, signals: signals.join(',') };
     }
 
-    // 13) Prueba de comportamiento: desplaza un viewport, espera y mira si la
-    //     pagina cambia (nuevos nodos o clases de visibilidad). Es la señal mas
-    //     fiable para paginas que animan o cargan contenido con IntersectionObserver
-    //     sin dejar rastro en el DOM inicial. Se deshace del desplazamiento al final.
+    // 13) Behavioral test: scroll one viewport, wait and check whether the
+    //     page changes (new nodes or visibility classes). The most reliable
+    //     signal for pages that animate or load content with IntersectionObserver
+    //     without leaving a trace in the initial DOM. Undoes the scroll at the end.
     try {
       var initialCount = document.querySelectorAll('*').length;
       var visibleClassRe = /(visible|active|in-view|inview|shown|animated|revealed|is-visible)/i;
@@ -506,10 +506,10 @@ async function dismissCookieBanners(target: Debuggee): Promise<number> {
  */
 const REPAINT_SCRIPT = `(function () {
   try {
-    // forzar reflow
+    // force reflow
     void document.body.offsetHeight;
     window.dispatchEvent(new Event('resize'));
-    // micro-scroll para despertar lazy content y compositor
+    // micro-scroll to wake up lazy content and the compositor
     var y = window.scrollY || 0;
     window.scrollTo(0, y + 1);
     window.scrollTo(0, y);
@@ -524,7 +524,7 @@ async function repaintPage(target: Debuggee): Promise<void> {
     await evaluate<boolean>(target, REPAINT_SCRIPT);
     await new Promise((r) => setTimeout(r, 120));
   } catch {
-    // No es critico.
+    // Not critical.
   }
 }
 
@@ -535,7 +535,7 @@ const WAIT_IFRAMES_SCRIPT = `new Promise(function (resolve) {
   var iframes = Array.prototype.slice.call(document.querySelectorAll('iframe'));
   if (iframes.length === 0) return resolve(true);
   var pending = iframes.filter(function (f) { return !f.contentDocument || (f.contentDocument && f.contentDocument.readyState !== 'complete'); });
-  // Solo esperamos los que declaran carga diferida o son visibles; tope de 4 s.
+  // Only wait for those declaring lazy loading or visible; 4 s cap.
   var toWait = iframes.slice(0, 20);
   var done = 0;
   var total = toWait.length;
@@ -556,7 +556,7 @@ async function waitForIframes(target: Debuggee): Promise<void> {
   try {
     await evaluate<boolean>(target, WAIT_IFRAMES_SCRIPT);
   } catch {
-    // No es critico.
+    // Not critical.
   }
 }
 
@@ -567,10 +567,10 @@ async function waitForIframes(target: Debuggee): Promise<void> {
  */
 const PREPARE_PAGE_SCRIPT = `(function () {
   try {
-    // Guardar estilos originales para restaurarlos.
+    // Save original styles to restore them.
     window.__fpsOriginalStyles = window.__fpsOriginalStyles || new Map();
 
-    // 1) Forzar content-visibility: visible en todos los elementos.
+    // 1) Force content-visibility: visible on all elements.
     var all = document.querySelectorAll('body *');
     var limit = Math.min(all.length, 5000);
     for (var i = 0; i < limit; i++) {
@@ -580,7 +580,7 @@ const PREPARE_PAGE_SCRIPT = `(function () {
         if (!window.__fpsOriginalStyles.has(el)) window.__fpsOriginalStyles.set(el, { cv: el.style.contentVisibility });
         el.style.setProperty('content-visibility', 'visible', 'important');
       }
-      // 2) Eliminar containment que podria recortar.
+      // 2) Remove containment that could clip.
       if (cs.contain && cs.contain !== 'none') {
         if (!window.__fpsOriginalStyles.has(el)) window.__fpsOriginalStyles.set(el, {});
         var s = window.__fpsOriginalStyles.get(el);
@@ -589,7 +589,7 @@ const PREPARE_PAGE_SCRIPT = `(function () {
       }
     }
 
-    // 3) Pausar animaciones y transiciones.
+    // 3) Pause animations and transitions.
     var style = document.getElementById('__fps-pause-style');
     if (!style) {
       style = document.createElement('style');
@@ -606,7 +606,7 @@ const PREPARE_PAGE_SCRIPT = `(function () {
 
 const RESTORE_PAGE_SCRIPT = `(function () {
   try {
-    // Restaurar content-visibility y contain.
+    // Restore content-visibility and contain.
     if (window.__fpsOriginalStyles) {
       window.__fpsOriginalStyles.forEach(function (orig, el) {
         try {
@@ -619,7 +619,7 @@ const RESTORE_PAGE_SCRIPT = `(function () {
       });
       window.__fpsOriginalStyles = null;
     }
-    // Quitar el style de pausa.
+    // Remove the pause style.
     var style = document.getElementById('__fps-pause-style');
     if (style && style.parentNode) style.parentNode.removeChild(style);
     return true;
@@ -676,7 +676,7 @@ async function preparePage(target: Debuggee): Promise<void> {
     await evaluate<boolean>(target, LOAD_SHADOW_IMAGES_SCRIPT);
     await evaluate<boolean>(target, WAIT_FONTS_SCRIPT);
   } catch {
-    // No es critico.
+    // Not critical.
   }
 }
 
@@ -684,7 +684,7 @@ async function restorePage(target: Debuggee): Promise<void> {
   try {
     await evaluate<boolean>(target, RESTORE_PAGE_SCRIPT);
   } catch {
-    // No es critico.
+    // Not critical.
   }
 }
 
@@ -732,7 +732,7 @@ async function showStickyElements(target: Debuggee): Promise<void> {
   try {
     await evaluate<number>(target, SHOW_STICKY_SCRIPT);
   } catch {
-    // La pagina pudo navegar o cerrarse durante la captura.
+    // The page may have navigated or closed during capture.
   }
 }
 
@@ -746,10 +746,10 @@ async function measurePage(target: Debuggee): Promise<{ width: number; height: n
 
   if (visual?.clientWidth) width = Math.max(width, Math.ceil(visual.clientWidth));
 
-  // Algunas paginas (p. ej. CT System) tienen el documento "congelado" (html con
-  // overflow hidden) y el contenido real se desplaza dentro del body o de un
-  // contenedor. Page.getLayoutMetrics solo ve el documento (600 px), asi que se
-  // mide el alto real del contenedor principal desplazable desde la pagina.
+  // Some pages (e.g. CT System) freeze the document (html with overflow hidden)
+  // and the real content scrolls inside the body or a container.
+  // Page.getLayoutMetrics only sees the document (600 px), so the real height of
+  // the main scrollable container is measured from the page.
   try {
     const fullHeight = await evaluate<number>(target, `(function () {
       function scroller() {
@@ -776,11 +776,11 @@ async function measurePage(target: Debuggee): Promise<{ width: number; height: n
       height = Math.ceil(fullHeight);
     }
   } catch {
-    // Se conserva la medida del protocolo.
+    // Keep the protocol measurement.
   }
 
-  // true si el documento en si no se desplaza (scroll anidado): en ese caso el
-  // modo rapido (una toma con captureBeyondViewport) no sirve, hay que ir por scroll.
+  // True if the document itself does not scroll (nested scroll): in that case
+  // fast mode (single shot with captureBeyondViewport) doesn't work, must scroll.
   let nestedScroller = false;
   try {
     const nested = await evaluate<boolean>(target, `(document.documentElement.scrollHeight <= document.documentElement.clientHeight + 1)`);
@@ -802,13 +802,13 @@ async function measureViewport(target: Debuggee): Promise<number> {
       return Math.round(height);
     }
   } catch {
-    // Se intenta la via directa de la pagina.
+    // Fall back to reading directly from the page.
   }
   try {
     const height = await evaluate<number>(target, "window.innerHeight || 0");
     if (typeof height === "number" && Number.isFinite(height) && height > 0) return Math.round(height);
   } catch {
-    // Ultimo recurso.
+    // Last resort.
   }
   return 800;
 }
@@ -869,19 +869,19 @@ async function captureSlices(
       const base64 = await shoot(target, settings, { x: 0, y: 0, width, height, scale: 1 });
       return { slices: [{ base64, y: 0, height }], downscaled: false };
     } catch (error) {
-      // Una captura unica puede fallar por limites de la superficie de la GPU:
-      // se reintenta por segmentos antes de rendirse.
+      // A single shot can fail due to GPU surface limits: retry in segments
+      // before giving up.
       console.warn("Captura unica fallida, se reintenta por segmentos:", describeError(error));
     }
   }
 
-  // Si la captura unica ya fallo, se trocea en partes mas pequenas.
+  // If the single shot already failed, split into smaller parts.
   const sliceHeight = height > MAX_SINGLE_SHOT_HEIGHT ? MAX_SINGLE_SHOT_HEIGHT : Math.max(1000, Math.ceil(height / 2));
   const total = Math.max(2, Math.ceil(height / sliceHeight));
   const slices: Slice[] = [];
 
-  // La primera parte se toma con la pagina intacta y arriba del todo, para que
-  // las cabeceras fijas aparezcan una sola vez, al principio de la imagen.
+  // The first part is taken with the page intact and scrolled to the top, so
+  // fixed headers appear only once, at the start of the image.
   await scrollTo(target, 0);
   onProgress("capturing", 30, `Capturando parte 1 de ${total}`);
   const firstHeight = Math.min(sliceHeight, height);
@@ -891,18 +891,18 @@ async function captureSlices(
     height: firstHeight,
   });
 
-  // Al desplazar la pagina para el resto de partes, las cabeceras fijas y
-  // adhesivas volverian a pegarse al borde superior y saldrian repetidas en
-  // mitad de la imagen, asi que se ocultan mientras dura la captura por partes.
+  // When scrolling for the remaining parts, fixed and sticky headers would stick
+  // to the top edge and appear repeated in the middle of the image, so they are
+  // hidden for the duration of the segmented capture.
   const hidden = await hideStickyElements(target);
   try {
     for (let index = 1; index < total; index += 1) {
       const y = index * sliceHeight;
       const currentHeight = Math.min(sliceHeight, height - y);
       onProgress("capturing", 30 + Math.round((index / total) * 40), `Capturando parte ${index + 1} de ${total}`);
-      // Desplazar hasta el segmento es imprescindible: con el clip lejos del
-      // viewport, Chrome rasteriza la pagina entera y el segmento tarda minutos
-      // en lugar de decimas de segundo.
+      // Scrolling to the segment is essential: with the clip far from the
+      // viewport, Chrome rasterizes the whole page and the segment takes
+      // minutes instead of tenths of a second.
       await scrollTo(target, y);
       const base64 = await shoot(target, settings, { x: 0, y, width, height: currentHeight, scale: 1 });
       slices.push({ base64, y, height: currentHeight });
@@ -937,9 +937,9 @@ async function captureByScroll(
   height: number,
   onProgress: ProgressFn,
 ): Promise<{ slices: Slice[]; downscaled: boolean }> {
-  // Si la ventana se desplaza (pagina normal), se puede usar captureBeyondViewport
-  // con clip, que es determinista y rapido. Si no (scroll anidado), hay que
-  // fotografiar el viewport tras desplazar el contenedor.
+  // If the window scrolls (normal page), captureBeyondViewport with a clip can
+  // be used: deterministic and fast. Otherwise (nested scroll) the viewport must
+  // be photographed after scrolling the container.
   let windowScrolls = true;
   try {
     windowScrolls = (await evaluate<boolean>(target, `(document.documentElement.scrollHeight > document.documentElement.clientHeight + 1)`)) === true;
@@ -953,8 +953,8 @@ async function captureByScroll(
   let total = Math.max(1, Math.ceil(height / step));
   const slices: Slice[] = [];
 
-  // Primera pantalla con la pagina intacta y arriba del todo, para que las
-  // cabeceras fijas aparezcan una sola vez, al principio de la imagen.
+  // First screen with the page intact and scrolled to the top, so fixed headers
+  // appear only once, at the start of the image.
   await scrollTo(target, 0);
   await settle(target);
   onProgress("capturing", 30, total === 1 ? `Capturando ${width} × ${height} px` : `Capturando parte 1 de ${total}`);
@@ -988,8 +988,8 @@ async function captureByScroll(
     }
   }
 
-  // Seguimiento de scroll infinito: si la pagina crece al desplazarse, se
-  // capturan los tramos nuevos. Tope de seguridad para no capturar para siempre.
+  // Infinite scroll follow: if the page grows on scroll, capture the new parts.
+  // Safety cap to avoid capturing forever.
   if (settings.followInfiniteScroll) {
     let guard = 0;
     while (guard < 10) {
@@ -1041,7 +1041,7 @@ async function captureVisible(target: Debuggee, settings: Settings, onProgress: 
   onProgress("capturing", 35, "Capturando la vista visible");
   const base64 = await shootViewport(target, settings);
 
-  // Dimensiones reales de la imagen capturada.
+  // Real dimensions of the captured image.
   const bitmap = await createImageBitmap(base64ToBlob(base64, mimeFor(settings)));
   const width = bitmap.width;
   const height = bitmap.height;
@@ -1097,7 +1097,7 @@ async function stitchSlices(
     onProgress("stitching", 70 + Math.round((index / slices.length) * 25), `Uniendo parte ${index + 1} de ${slices.length}`);
 
     const bitmap = await createImageBitmap(base64ToBlob(slice.base64, mimeType));
-    // Se calculan los bordes redondeando el acumulado para no dejar costuras de 1 px.
+    // Edges are computed by rounding the accumulated offset to avoid 1 px seams.
     const top = Math.round(slice.y * ratio);
     const bottom = Math.round((slice.y + slice.height) * ratio);
     context.drawImage(bitmap, 0, top, canvasWidth, Math.max(1, bottom - top));
@@ -1118,7 +1118,7 @@ async function isTabActive(tabId: number): Promise<boolean> {
     const tab = await chrome.tabs.get(tabId);
     return tab.active === true;
   } catch {
-    // Si no se puede saber, se asume que si para no tocar el foco sin motivo.
+    // If it can't be determined, assume yes to avoid touching focus needlessly.
     return true;
   }
 }
@@ -1166,7 +1166,7 @@ export async function captureFullPage(
     target = await attach(tabId);
   } catch (error) {
     const fe = friendlyError(error);
-    // Paginas restringidas: se intenta al menos una captura de la vista visible.
+    // Restricted pages: attempt at least a visible-viewport capture.
     const restricted =
       fe.hint.includes("páginas internas") ||
       fe.message.includes("No se pudo completar") ||
@@ -1177,7 +1177,7 @@ export async function captureFullPage(
         const fallback = await captureVisibleTabFallback(tabId, settings);
         return fallback;
       } catch {
-        // Si el respaldo también falla, se informa el error original.
+        // If the fallback also fails, report the original error.
       }
     }
     throw fe;
@@ -1189,11 +1189,10 @@ export async function captureFullPage(
     await sendCommand(target, "Page.enable");
     await sendCommand(target, "Runtime.enable");
 
-    // Las capturas por segmentos necesitan que la pestana este visible: si no,
-    // el compositor no genera fotogramas nuevos y los segmentos a partir del
-    // segundo se quedan colgados. Solo se activa si hace falta, porque activar
-    // la pestana cerraria el popup y con el se perderia el foco que necesita el
-    // portapapeles. En el uso normal ya es la pestana activa.
+    // Segmented captures need the tab to be visible: otherwise the compositor
+    // won't produce new frames and segments from the second one hang. Only
+    // activated when needed, because activating the tab would close the popup and
+    // lose the focus the clipboard needs. In normal usage it's already active.
     if (!(await isTabActive(tabId))) {
       await sendCommand(target, "Page.bringToFront");
     }
@@ -1217,7 +1216,7 @@ export async function captureFullPage(
       }
     }
 
-    // Captura solo de lo visible: se resuelve aqui, sin desplazarse.
+    // Visible-only capture: resolved here, without scrolling.
     if (effectiveMode === "visible") {
       if (settings.dismissCookieBanners) {
         onProgress("loading", 6, "Cerrando banners de cookies");
@@ -1235,8 +1234,8 @@ export async function captureFullPage(
       return visible;
     }
 
-    // Si el documento no se desplaza por si mismo (scroll anidado), el modo
-    // rapido no puede capturar mas que la ventana visible: se fuerza el scroll.
+    // If the document does not scroll by itself (nested scroll), fast mode can
+    // only capture the visible viewport: scroll is forced.
     if (effectiveMode === "fast") {
       try {
         const nested = await evaluate<boolean>(target, `(document.documentElement.scrollHeight <= document.documentElement.clientHeight + 1)`);
@@ -1245,7 +1244,7 @@ export async function captureFullPage(
           onProgress("loading", 8, "Contenido en contenedor desplazable: se usará el recorrido por scroll");
         }
       } catch {
-        // Se conserva el modo actual.
+        // Keep the current mode.
       }
     }
 
@@ -1286,8 +1285,8 @@ export async function captureFullPage(
 
     let base64 = slices[0]?.base64 ?? "";
     let downscaled = sliceDownscaled;
-    // width/height son los de la pagina; si el lienzo reduce la imagen, hay que
-    // informar del tamano real del archivo, no del que tenia la pagina.
+    // width/height are the page's; if the canvas downscales the image, the real
+    // output size must be reported, not the page's.
     let outputWidth = width;
     let outputHeight = height;
 
@@ -1316,9 +1315,9 @@ export async function captureFullPage(
   } catch (error) {
     throw friendlyError(error);
   } finally {
-    // Restaurar los estilos que se cambiaron para capturar.
+    // Restore the styles that were changed for capture.
     await restorePage(target);
-    // La captura por segmentos desplaza la pagina: se devuelve a su sitio.
+    // Segmented capture scrolls the page: return it to its place.
     await scrollTo(target, initialScroll);
     await detach(target);
   }

@@ -1,43 +1,44 @@
-/** Tipos compartidos entre el service worker, el popup, la pagina de opciones y la ventana auxiliar. */
+/** Shared types between the service worker, the popup, the options page and the helper window. */
 
 export type ImageFormat = "png" | "jpeg";
 
 /**
- * Como se recorre la pagina al capturar:
- * - "fast": una sola toma (o por segmentos) sin desplazarla. Rapido y fiel para
- *   la mayoria de paginas.
- * - "scroll": baja la vista pantalla a pantalla y captura cada posicion.
- *   Imprescindible cuando el contenido solo aparece al desplazarse (imagenes con
- *   carga diferida, listas virtualizadas, animaciones al entrar en vista).
- * - "auto": decide entre los dos anteriores mirando si la pagina carga contenido
- *   al desplazarse. Es el valor por defecto.
+ * How the page is walked while capturing:
+ * - "fast": single shot (or segmented) without scrolling. Fast and faithful for
+ *   most pages.
+ * - "scroll": walks the view screen by screen and captures each position.
+ *   Essential when content only appears on scroll (lazy images, virtualized
+ *   lists, entrance animations).
+ * - "auto": decides between the two above by checking whether the page loads
+ *   content on scroll. Default value.
+ * - "visible": captures only what is currently on screen, without scrolling.
  */
 export type CaptureMode = "fast" | "scroll" | "auto" | "visible";
 
 export interface Settings {
-  /** Formato de salida. */
+  /** Output format. */
   format: ImageFormat;
-  /** Calidad JPEG (1-100). Se ignora en PNG. */
+  /** JPEG quality (1-100). Ignored for PNG. */
   quality: number;
-  /** Copiar la captura al portapapeles al terminar. */
+  /** Copy the capture to the clipboard when finished. */
   copyToClipboard: boolean;
-  /** Subcarpeta dentro de Descargas. Vacio = raiz de Descargas. */
+  /** Subfolder inside Downloads. Empty = Downloads root. */
   subfolder: string;
-  /** Abrir el dialogo nativo para elegir carpeta en cada captura. */
+  /** Open the native dialog to choose the folder on every capture. */
   askWhereToSave: boolean;
-  /** Recorrer la pagina antes de capturar para forzar la carga diferida (lazy loading). */
+  /** Walk the page before capturing to force lazy loading. */
   lazyLoadPass: boolean;
-  /** Mostrar una notificacion del sistema al terminar. */
+  /** Show a system notification when finished. */
   notifyOnDone: boolean;
-  /** Como se recorre la pagina al capturar. */
+  /** How the page is walked while capturing. */
   captureMode: CaptureMode;
-  /** Segundos de espera antes de capturar (0 = inmediato). Util para capturar estados con hover. */
+  /** Seconds to wait before capturing (0 = immediate). Useful for hover states. */
   captureDelay: number;
-  /** Intentar cerrar banners de cookies/consentimiento antes de capturar. */
+  /** Try to dismiss cookie/consent banners before capturing. */
   dismissCookieBanners: boolean;
-  /** Seguir capturando mientras la pagina crece (scroll infinito). */
+  /** Keep capturing while the page keeps growing (infinite scroll). */
   followInfiniteScroll: boolean;
-  /** Forzar repintado antes de capturar (mejora Canvas/WebGL). */
+  /** Force a repaint before capturing (improves Canvas/WebGL). */
   repaintCanvas: boolean;
 }
 
@@ -68,24 +69,24 @@ export type ProgressStage =
 export type ClipboardOutcome = "ok" | "failed" | "skipped";
 
 export interface CaptureResult {
-  /** Ruta relativa a Descargas, con subcarpeta incluida. */
+  /** Path relative to Downloads, including the subfolder. */
   filename: string;
-  /** Solo el nombre del archivo, para mostrar al usuario. */
+  /** Just the file name, to show to the user. */
   displayName: string;
   width: number;
   height: number;
   bytes: number;
-  /** true si el resultado se redujo para caber en el limite del lienzo. */
+  /** True if the result was downscaled to fit the canvas limit. */
   downscaled: boolean;
   downloadId: number;
   clipboard: ClipboardOutcome;
   clipboardError: string;
-  /** Como se escribio en el portapapeles: api moderna o execCommand. */
+  /** How it was written to the clipboard: modern API or execCommand. */
   clipboardMethod: string;
   elapsedMs: number;
 }
 
-/* ---------------------------------- Mensajes --------------------------------- */
+/* ---------------------------------- Messages --------------------------------- */
 
 export interface ProgressMessage {
   target: "popup";
@@ -137,7 +138,7 @@ export interface BackgroundFailure {
 export type BackgroundResponse = BackgroundSuccess | BackgroundFailure;
 
 export interface CopyToClipboardRequest {
-  /** De la ventana de fondo al popup: "escribe esto en el portapapeles". */
+  /** From the background window to the popup: "write this to the clipboard". */
   target: "popup";
   type: "COPY";
   base64: string;
@@ -145,7 +146,7 @@ export interface CopyToClipboardRequest {
 }
 
 export interface CopyHelperReadyRequest {
-  /** De la ventana auxiliar a la ventana de fondo: "dame el trabajo pendiente". */
+  /** From the helper window to the background window: "give me the pending job". */
   target: "background";
   type: "COPY_HELPER_READY";
 }
@@ -165,7 +166,7 @@ export interface CopyHelperJob {
 
 export interface ClipboardWriteResult {
   ok: boolean;
-  /** "clipboard-api" cuando lo escribio la API moderna. */
+  /** "clipboard-api" when written with the modern API. */
   method: string;
   error: string;
 }

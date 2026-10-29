@@ -21,18 +21,18 @@ let busy = false;
 
 function emit(event: PopupEvent): void {
   chrome.runtime.sendMessage(event).catch(() => {
-    // El popup puede estar cerrado; el proceso de captura continua igual.
+    // The popup may be closed; the capture process continues anyway.
   });
 }
 
 function emitProgress(stage: ProgressStage, percent: number, detail: string): void {
   emit({ target: "popup", type: "PROGRESS", stage, percent, detail });
-  // Progreso en el icono de la barra, util cuando no hay popup abierto (atajo).
+  // Progress on the toolbar icon, useful when no popup is open (shortcut).
   try {
     chrome.action.setBadgeText({ text: percent >= 100 ? "" : `${percent}%` });
     chrome.action.setBadgeBackgroundColor({ color: "#4f46e5" });
   } catch {
-    // El badge es un extra.
+    // The badge is a bonus.
   }
 }
 
@@ -50,24 +50,24 @@ async function notify(title: string, message: string, downloadId?: number): Prom
       iconUrl: chrome.runtime.getURL("icons/icon128.png"),
       title,
       message,
-      // Hace que la notificacion siga visible hasta que el usuario la cierre o pulse.
+      // Keeps the notification visible until the user closes or clicks it.
       requireInteraction: false,
     });
     if (id && typeof downloadId === "number") notificationDownloads.set(id, downloadId);
     return id;
   } catch {
-    // Las notificaciones son un extra: si fallan, no rompen la captura.
+    // Notifications are a bonus: if they fail, they don't break the capture.
     return undefined;
   }
 }
 
-// Al pulsar una notificacion, se abre (o se muestra en la carpeta) la imagen capturada.
+// When a notification is clicked, open (or reveal in folder) the captured image.
 chrome.notifications.onClicked.addListener((notificationId) => {
   const downloadId = notificationDownloads.get(notificationId);
   notificationDownloads.delete(notificationId);
   if (typeof downloadId !== "number") return;
-  // Se intenta abrir el archivo con el visor predeterminado; si no se puede,
-  // se muestra en la carpeta de Descargas.
+  // Try to open the file with the default viewer; if not possible,
+  // reveal it in the Downloads folder.
   chrome.downloads.open(downloadId).catch(() => {
     chrome.downloads.show(downloadId);
   });
@@ -104,7 +104,7 @@ async function copyFromPopup(base64: string, mimeType: string): Promise<Clipboar
     const response = (await chrome.runtime.sendMessage(request)) as ClipboardWriteResult | undefined;
     return response ?? null;
   } catch {
-    // El popup no esta abierto: nadie atendio el mensaje.
+    // The popup is not open: nobody handled the message.
     return null;
   }
 }
@@ -149,7 +149,7 @@ async function closeHelperWindow(): Promise<void> {
   try {
     await chrome.windows.remove(id);
   } catch {
-    // La ventana ya se cerro sola tras copiar.
+    // The window already closed itself after copying.
   }
 }
 
@@ -160,7 +160,7 @@ async function copyToClipboard(base64: string, mimeType: string): Promise<Clipbo
   const fromHelper = await copyFromHelperWindow(base64, mimeType);
   if (fromHelper.ok) return fromHelper;
 
-  // Si el popup dio un error concreto, es mas informativo que el del respaldo.
+  // If the popup gave a specific error, it's more informative than the fallback's.
   return fromPopup ?? fromHelper;
 }
 
@@ -198,7 +198,7 @@ async function runCapture(tabId: number, forceMode?: CaptureMode): Promise<Captu
   emitProgress("saving", 98, "Guardando el archivo");
   const filename = buildFilename(output.url, settings.format, settings.subfolder);
 
-  // Se usa una data URL: evita depender del ciclo de vida de un blob entre contextos.
+  // A data URL is used: avoids depending on a blob's lifetime across contexts.
   const downloadId = await chrome.downloads.download({
     url: `data:${output.mimeType};base64,${output.base64}`,
     filename,
@@ -225,7 +225,7 @@ async function runCapture(tabId: number, forceMode?: CaptureMode): Promise<Captu
     await notify("Captura lista", `${result.displayName} · ${details}`, downloadId);
   }
 
-  // Historial de las ultimas capturas.
+  // History of recent captures.
   try {
     const stored = await chrome.storage.local.get("recentCaptures");
     const list = Array.isArray(stored?.recentCaptures) ? stored.recentCaptures : [];
@@ -239,7 +239,7 @@ async function runCapture(tabId: number, forceMode?: CaptureMode): Promise<Captu
     });
     await chrome.storage.local.set({ recentCaptures: list.slice(0, 8) });
   } catch {
-    // El historial es un extra.
+    // History is a bonus.
   }
 
   return result;
@@ -266,7 +266,7 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
   if (!request || request.target !== "background") return undefined;
 
   if (request.type === "COPY_HELPER_READY") {
-    // La ventana auxiliar pide el trabajo pendiente (puede venir vacio).
+    // The helper window requests the pending job (may be empty).
     sendResponse(pendingJob);
     return true;
   }
@@ -329,7 +329,7 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
   return undefined;
 });
 
-// Atajos de teclado: capturan la pestaña activa sin abrir el popup.
+// Keyboard shortcuts: capture the active tab without opening the popup.
 chrome.commands.onCommand.addListener((command) => {
   const forceMode: CaptureMode | undefined =
     command === "capture-visible" ? "visible" : undefined;

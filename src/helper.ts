@@ -2,11 +2,11 @@ import { writeImageToClipboard } from "./clipboard";
 import type { CopyHelperJob, CopyHelperReadyRequest, CopyHelperResultRequest } from "./types";
 
 /**
- * Ventana auxiliar de copiado.
+ * Clipboard helper window.
  *
- * Se abre solo cuando el popup ya no esta disponible (el usuario hizo clic
- * fuera mientras se capturaba). Al ser una ventana con foco, si puede usar la
- * API del portapapeles. Vive lo justo para copiar y se cierra sola.
+ * Opened only when the popup is no longer available (the user clicked away
+ * while capturing). Because it's a focused window, it can use the Clipboard
+ * API. It lives just long enough to copy and closes itself.
  */
 
 async function run(): Promise<void> {
@@ -37,7 +37,7 @@ async function run(): Promise<void> {
   try {
     await chrome.runtime.sendMessage(result);
   } catch {
-    // La ventana de fondo pudo perderse: no hay nada mas que hacer.
+    // The background window may be gone: nothing else to do.
   }
 
   window.close();

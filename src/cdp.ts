@@ -1,4 +1,4 @@
-/** Envoltura tipada y minima sobre chrome.debugger (Chrome DevTools Protocol). */
+/** Typed minimal wrapper over chrome.debugger (Chrome DevTools Protocol). */
 
 export const CDP_VERSION = "1.3";
 
@@ -14,7 +14,7 @@ export async function detach(target: Debuggee): Promise<void> {
   try {
     await chrome.debugger.detach(target);
   } catch {
-    // La pestana pudo cerrarse o el usuario pudo detener el depurador.
+    // The tab may have closed or the user may have stopped the debugger.
   }
 }
 
@@ -32,7 +32,7 @@ interface EvaluateResult {
   exceptionDetails?: { text?: string; exception?: { description?: string } };
 }
 
-/** Ejecuta una expresion en la pagina y devuelve su valor serializado. */
+/** Runs an expression in the page and returns its serialized value. */
 export async function evaluate<T>(target: Debuggee, expression: string): Promise<T> {
   const response = await sendCommand<EvaluateResult>(target, "Runtime.evaluate", {
     expression,
