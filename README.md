@@ -235,6 +235,12 @@ protocolo DevTools, no inyectando código.
 
 ---
 
+## 🔒 Seguridad
+
+Si encuentras una vulnerabilidad, repórtala de forma privada desde la pestaña **Security** del repositorio (ver [`SECURITY.md`](./SECURITY.md)). No abras un issue público.
+
+---
+
 ## 📝 Licencia
 
 Este proyecto se distribuye bajo la **licencia MIT**, es decir, uso libre: puedes usarlo, copiarlo, modificarlo, fusionarlo, publicarlo, distribuirlo, sublicenciarlo y/o venderlo, siempre que mantengas el aviso de copyright y la licencia. Consulta el archivo [`LICENSE`](./LICENSE) para el texto completo.
