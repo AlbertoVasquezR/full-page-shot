@@ -119,6 +119,8 @@ npm run doctor
 | Command | What it does |
 | --- | --- |
 | `npm run setup` | `npm install` + `npm run build` in one step. |
+| `npm run update` | `git pull` + `npm install` + `npm run build`. |
+| `npm run release` | Build + zip ready for GitHub Releases. |
 | `npm run build` | Compiles `src/` to `dist/` and copies `public/`. |
 | `npm run dev` | Same in watch mode (recompiles on save). |
 | `npm run typecheck` | Type-checks only, no files generated. |
