@@ -5,12 +5,15 @@
   "description": "Extension de Microsoft Edge para capturar paginas web completas (PNG/JPEG).",
   "type": "module",
   "scripts": {
+    "setup": "npm install && npm run build",
     "icons": "node tools/make-icons.mjs",
     "build": "node build.mjs",
     "dev": "node build.mjs --watch",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run build",
     "package": "node tools/package.mjs",
+    "capture": "node tools/agent-capture.mjs",
+    "doctor": "node tools/doctor.mjs",
     "agent:launch": "node mcp/launch-chrome.mjs",
     "agent:serve": "node mcp/server.mjs",
     "agent:capture": "node tools/agent-capture.mjs"

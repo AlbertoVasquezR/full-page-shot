@@ -77,17 +77,25 @@ An *offscreen* document is useless here: it can never gain focus, and the old `d
 
 ## 🚀 Installation
 
+**One command (humans):**
 ```powershell
-npm install
-npm run build    # compiles to dist/
+npm run setup    # npm install + npm run build
 ```
 
 Then, in Edge:
-
 1. Open `edge://extensions/`.
-2. Enable **Developer mode** (bottom left).
-3. Click **Load unpacked** and select the **`dist`** folder (not the project root).
-4. Pin the extension to the toolbar with the puzzle-piece icon.
+2. Enable **Developer mode**.
+3. Click **Load unpacked** → select the **`dist`** folder.
+4. Pin the extension to the toolbar.
+
+**Verify everything is ready:**
+```powershell
+npm run doctor
+```
+
+**For AI agents (zero config):** the `.mcp.json` is auto-detected. Just register the server in your agent and call `capture_full_page({ url })`. Or use the CLI: `npm run capture -- <url>`.
+
+**No Node.js?** Download the pre-built zip from [Releases](https://github.com/AlbertoVasquezR/full-page-shot/releases) and load the extracted folder.
 
 > On install, Edge will warn that the extension "can read and change all your data".
 > That's the mandatory notice for the `debugger` permission, which is exactly what enables
@@ -110,10 +118,13 @@ Then, in Edge:
 
 | Command | What it does |
 | --- | --- |
+| `npm run setup` | `npm install` + `npm run build` in one step. |
 | `npm run build` | Compiles `src/` to `dist/` and copies `public/`. |
 | `npm run dev` | Same in watch mode (recompiles on save). |
 | `npm run typecheck` | Type-checks only, no files generated. |
 | `npm run check` | `typecheck` + `build`. |
+| `npm run doctor` | Verifies the environment is ready. |
+| `npm run capture -- <url>` | Captures a page (CLI for agents and quick use). |
 | `npm run icons` | Regenerates the PNG icons with no dependencies. |
 | `node tools/smoke-test.mjs` | Real end-to-end test: launches Edge, captures long pages and checks the downloaded PNG/JPEG, in fast and scroll modes. With `--include-segments` adds a 65,000 px page and a 20,000 px scroll page. With `--only=scroll` filters by name and with `--keep` keeps the downloads. |
 | `node tools/verify-clipboard.mjs` | Checks that the clipboard really receives a PNG image (reads the clipboard back), through both paths: popup and helper window. |
