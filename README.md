@@ -190,6 +190,8 @@ full-page-shot/
 
 **No site access is requested** (`host_permissions`): the URL and title are read through the DevTools Protocol, not by injecting code.
 
+**Privacy policy:** https://albertovasquezr.github.io/full-page-shot/ (GitHub Pages, no data collected, everything local).
+
 ---
 
 ## ⚠️ Real limits (no extension can bypass these)
