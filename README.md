@@ -150,10 +150,13 @@ full-page-shot/
 │   ├── settings.ts         reading/writing preferences
 │   ├── types.ts            shared types and messages
 │   └── util.ts             base64, file names, size formatting
+├── AGENTS.md               instructions for AI agents
+├── .mcp.json               auto-detected MCP config for AI agents
 ├── tools/
 │   ├── make-icons.mjs      icon generator (own PNG, no libraries)
 │   ├── smoke-test.mjs      end-to-end test
-│   └── verify-clipboard.mjs clipboard verification
+│   ├── verify-clipboard.mjs clipboard verification
+│   └── agent-capture.mjs  CLI for AI agents (one-shot capture)
 ├── build.mjs               esbuild script + static copy
 └── tsconfig.json
 ```

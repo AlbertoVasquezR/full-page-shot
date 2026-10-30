@@ -12,7 +12,8 @@
     "check": "npm run typecheck && npm run build",
     "package": "node tools/package.mjs",
     "agent:launch": "node mcp/launch-chrome.mjs",
-    "agent:serve": "node mcp/server.mjs"
+    "agent:serve": "node mcp/server.mjs",
+    "agent:capture": "node tools/agent-capture.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.3.5",
