@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Full Page Shot — Privacy Policy</title>
+  <style>
+    :root {
+      --bg: #0c101c; --panel: #131a2b; --fg: #e9edf8; --muted: #8f9bb3;
+      --line: #232c42; --accent: #8b87f5; --accent-2: #c084fc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--fg);
+      font: 16px/1.6 system-ui, "Segoe UI", Roboto, sans-serif;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
+    header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+    header img { border-radius: 12px; }
+    h1 { margin: 0; font-size: 28px; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    h2 { margin-top: 32px; font-size: 18px; color: var(--accent-2); }
+    p, li { color: var(--fg); }
+    ul { padding-left: 20px; }
+    li { margin: 6px 0; }
+    .card {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 14px; padding: 24px; margin-top: 24px;
+    }
+    a { color: var(--accent); }
+    footer { margin-top: 48px; color: var(--muted); font-size: 13px; text-align: center; }
+    .badge {
+      display: inline-block; padding: 4px 10px; border-radius: 99px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #0c101c; font-weight: 600; font-size: 12px; margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="../assets/banner.svg" alt="" width="60" height="60" style="border-radius:12px" onerror="this.style.display='none'" />
+      <div>
+        <h1>Full Page Shot</h1>
+        <div class="sub">Privacy Policy</div>
+        <div class="badge">No data collected</div>
+      </div>
+    </header>
+
+    <div class="card">
+      <p><strong>Last updated:</strong> October 2026</p>
+      <p>
+        Full Page Shot is a browser extension that captures full-page screenshots.
+        This privacy policy explains what data the extension accesses and how it is used.
+      </p>
+
+      <h2>1. Data collection</h2>
+      <p>
+        Full Page Shot does <strong>not</strong> collect, store, transmit, or share any personal
+        data. All capture, processing and saving happen <strong>locally in your browser</strong>.
+        No information is sent to any external server.
+      </p>
+
+      <h2>2. Permissions and why they are needed</h2>
+      <ul>
+        <li><strong>debugger</strong> — the only way to capture the full page via the Chrome DevTools Protocol (<code>Page.captureScreenshot</code> with <code>captureBeyondViewport</code>). Used solely to take the screenshot.</li>
+        <li><strong>downloads</strong> — to save the captured image to your chosen folder.</li>
+        <li><strong>storage</strong> — to store your preferences (format, quality, folder, etc.) in <code>storage.sync</code>.</li>
+        <li><strong>clipboardWrite</strong> — to copy the captured image to the clipboard when you enable that option.</li>
+        <li><strong>notifications</strong> — to notify you when a capture finishes.</li>
+        <li><strong>activeTab</strong> — fallback capture for restricted pages (internal pages, PDFs), only when you click the icon on that page.</li>
+        <li><strong>scripting</strong> — to inject preparation scripts (cookie dismissal, font loading, repaint) on the page being captured.</li>
+      </ul>
+      <p>
+        The extension does <strong>not</strong> request <code>host_permissions</code>. The URL and
+        title are read through the DevTools Protocol, not by injecting code into pages.
+      </p>
+
+      <h2>3. Local storage</h2>
+      <p>
+        Your preferences are stored in <code>chrome.storage.sync</code> (synced across your
+        signed-in browsers by Chrome/Edge). Recent captures (file name, dimensions, timestamp)
+        are stored in <code>chrome.storage.local</code> and never leave your device.
+      </p>
+
+      <h2>4. Third parties</h2>
+      <p>
+        Full Page Shot does not integrate with any third-party analytics, advertising, or
+        tracking service. It does not use cookies. The only network requests are those
+        made by the web pages you capture (which are independent of this extension).
+      </p>
+
+      <h2>5. Open source</h2>
+      <p>
+        Full Page Shot is open source under the <a href="https://github.com/AlbertoVasquezR/full-page-shot/blob/main/LICENSE">MIT License</a>.
+        You can audit the code at <a href="https://github.com/AlbertoVasquezR/full-page-shot">github.com/AlbertoVasquezR/full-page-shot</a>.
+      </p>
+
+      <h2>6. Contact</h2>
+      <p>
+        Questions or concerns? Open an issue on
+        <a href="https://github.com/AlbertoVasquezR/full-page-shot/issues">GitHub</a>
+        or report a vulnerability via the <a href="https://github.com/AlbertoVasquezR/full-page-shot/security">Security tab</a>.
+      </p>
+    </div>
+
+    <footer>
+      Full Page Shot · MIT License · <a href="https://github.com/AlbertoVasquezR/full-page-shot">GitHub</a>
+    </footer>
+  </div>
+</body>
+</html>
