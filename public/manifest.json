@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Full Page Shot",
   "version": "1.0.0",
-  "description": "Captura de pagina completa en Microsoft Edge: PNG o JPEG de toda la pagina, portapapeles y carpeta de destino.",
+  "description": "Full-page capture for Microsoft Edge: PNG or JPEG of the whole page, clipboard and destination folder.",
   "minimum_chrome_version": "116",
   "icons": {
     "16": "icons/icon16.png",

@@ -64,17 +64,17 @@ function applySettings(next: Settings): void {
   qualityValue.textContent = String(next.quality);
   copyToggle.checked = next.copyToClipboard;
   destHint.textContent = next.askWhereToSave
-    ? "Se preguntará dónde guardar"
+    ? "Will ask where to save"
     : next.subfolder.trim()
-      ? `Descargas/${next.subfolder.trim()}`
-      : "Descargas";
+      ? `Downloads/${next.subfolder.trim()}`
+      : "Downloads";
 }
 
 function setRunning(value: boolean): void {
   running = value;
   captureButton.disabled = value;
   captureButton.classList.toggle("is-busy", value);
-  el<HTMLElement>("captureLabel").textContent = value ? "Capturando…" : "Capturar página completa";
+  el<HTMLElement>("captureLabel").textContent = value ? "Capturing…" : "Capture full page";
 }
 
 function showProgress(percent: number, detail: string): void {
@@ -109,7 +109,7 @@ function showDone(result: CaptureResult): void {
   ];
   if (result.downscaled) parts.push("reducida");
   if (result.clipboard === "ok") parts.push("copiada");
-  if (result.clipboard === "failed") parts.push("portapapeles falló");
+  if (result.clipboard === "failed") parts.push("clipboard failed");
   resultMeta.textContent = parts.join(" · ");
 
   if (result.clipboard === "failed" && result.clipboardError) {

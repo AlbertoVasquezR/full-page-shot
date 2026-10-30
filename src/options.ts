@@ -50,7 +50,7 @@ function updatePreview(): void {
   const raw = subfolderInput.value.trim().replace(/[\\/]+/g, "/");
   const folder = raw ? raw.replace(/^\/+|\/+$/g, "") : "";
   const extension = format === "png" ? "png" : "jpg";
-  const target = askWhereInput.checked ? "(te preguntará)" : folder ? `Descargas/${folder}/` : "Descargas/";
+  const target = askWhereInput.checked ? "(will ask)" : folder ? `Downloads/${folder}/` : "Downloads/";
   preview.textContent = `${target}captura-sitio-web-20261016-143000.${extension}`;
 }
 

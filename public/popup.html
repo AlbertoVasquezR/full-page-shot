@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <title>Full Page Shot</title>
@@ -11,12 +11,12 @@
         <img class="head__icon" src="icons/icon32.png" alt="" width="30" height="30" />
         <div class="head__text">
           <h1>Full Page Shot</h1>
-          <p>Captura la página entera, no solo lo que ves.</p>
+          <p>Capture the whole page, not just what you see.</p>
         </div>
       </header>
 
       <button id="capture" class="primary" type="button">
-        <span id="captureLabel">Capturar página completa</span>
+        <span id="captureLabel">Capture full page</span>
       </button>
 
       <div class="feedback">
@@ -29,8 +29,8 @@
           <p id="resultTitle" class="card__title"></p>
           <p id="resultMeta" class="card__meta"></p>
           <div class="row">
-            <button id="showFile" class="ghost" type="button">Ver archivo</button>
-            <button id="captureAgain" class="ghost" type="button">Otra captura</button>
+            <button id="showFile" class="ghost" type="button">Show file</button>
+            <button id="captureAgain" class="ghost" type="button">Capture again</button>
           </div>
         </section>
 
@@ -41,43 +41,43 @@
       </div>
 
       <section id="recentSection" class="recent" hidden>
-        <p class="recent__title">Capturas recientes</p>
+        <p class="recent__title">Recent captures</p>
         <ul id="recentList" class="recent__list"></ul>
       </section>
 
       <section class="settings">
         <div class="field">
-          <span class="field__label">Formato</span>
-          <div id="formatGroup" class="segmented" role="group" aria-label="Formato de imagen">
+          <span class="field__label">Format</span>
+          <div id="formatGroup" class="segmented" role="group" aria-label="Image format">
             <button type="button" class="seg" data-format="png">PNG</button>
             <button type="button" class="seg" data-format="jpeg">JPEG</button>
           </div>
         </div>
 
         <div id="qualityField" class="field" hidden>
-          <label class="field__label" for="quality">Calidad JPEG · <output id="qualityValue">92</output></label>
+          <label class="field__label" for="quality">JPEG quality · <output id="qualityValue">92</output></label>
           <input id="quality" class="range" type="range" min="40" max="100" step="1" value="92" />
         </div>
 
         <label class="check">
           <input id="copyToggle" type="checkbox" />
-          <span>Copiar al portapapeles</span>
+          <span>Copy to clipboard</span>
         </label>
 
         <div class="field">
-          <span class="field__label">Recorrido de la página</span>
-          <div id="modeGroup" class="segmented" role="group" aria-label="Método de captura">
-            <button type="button" class="seg" data-mode="auto">Automático</button>
-            <button type="button" class="seg" data-mode="fast">Rápido</button>
-            <button type="button" class="seg" data-mode="scroll">Por scroll</button>
+          <span class="field__label">Page walk</span>
+          <div id="modeGroup" class="segmented" role="group" aria-label="Capture mode">
+            <button type="button" class="seg" data-mode="auto">Automatic</button>
+            <button type="button" class="seg" data-mode="fast">Fast</button>
+            <button type="button" class="seg" data-mode="scroll">Scroll</button>
             <button type="button" class="seg" data-mode="visible">Visible</button>
           </div>
-          <span class="field__hint">Automático decide solo. Rápido: una sola pasada. Por scroll: recorre la vista paso a paso.</span>
+          <span class="field__hint">Automatic decides on its own. Fast: single pass. Scroll: walks the view step by step.</span>
         </div>
       </section>
 
       <footer class="foot">
-        <button id="openOptions" class="link" type="button">Opciones de guardado</button>
+        <button id="openOptions" class="link" type="button">Save options</button>
         <span id="destHint" class="foot__hint"></span>
       </footer>
     </main>

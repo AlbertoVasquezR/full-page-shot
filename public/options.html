@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Opciones · Full Page Shot</title>
+    <title>Options · Full Page Shot</title>
     <link rel="stylesheet" href="options.css" />
   </head>
   <body>
@@ -10,118 +10,118 @@
       <header class="head">
         <img src="icons/icon48.png" alt="" width="40" height="40" />
         <div>
-          <h1>Opciones de Full Page Shot</h1>
-          <p>Cómo y dónde se guardan tus capturas de página completa.</p>
+          <h1>Full Page Shot options</h1>
+          <p>How and where your full-page captures are saved.</p>
         </div>
       </header>
 
       <section class="panel">
-        <h2>Guardado</h2>
+        <h2>Saving</h2>
 
         <label class="field">
-          <span class="field__label">Subcarpeta dentro de Descargas</span>
+          <span class="field__label">Subfolder inside Downloads</span>
           <input id="subfolder" type="text" placeholder="FullPageShot" spellcheck="false" />
-          <span class="field__hint">Se crea sola. Déjalo vacío para guardar en la raíz de Descargas.</span>
+          <span class="field__hint">Created automatically. Leave empty to save in the Downloads root.</span>
         </label>
 
         <label class="check">
           <input id="askWhere" type="checkbox" />
           <span>
-            Preguntar dónde guardar en cada captura
-            <em>Abre el diálogo nativo de Windows, donde sí puedes elegir cualquier carpeta.</em>
+            Ask where to save on every capture
+            <em>Opens the native Windows dialog, where you can pick any folder.</em>
           </span>
         </label>
 
-        <p class="preview">Ejemplo: <code id="preview"></code></p>
+        <p class="preview">Example: <code id="preview"></code></p>
       </section>
 
       <section class="panel">
-        <h2>Imagen</h2>
+        <h2>Image</h2>
 
         <div class="field">
-          <span class="field__label">Formato por defecto</span>
-          <div id="formatGroup" class="segmented" role="group" aria-label="Formato de imagen">
+          <span class="field__label">Default format</span>
+          <div id="formatGroup" class="segmented" role="group" aria-label="Image format">
             <button type="button" class="seg" data-format="png">PNG</button>
             <button type="button" class="seg" data-format="jpeg">JPEG</button>
           </div>
-          <span class="field__hint">PNG no pierde calidad. JPEG pesa menos en páginas larguísimas.</span>
+          <span class="field__hint">PNG is lossless. JPEG is smaller for very long pages.</span>
         </div>
 
         <div id="qualityField" class="field" hidden>
-          <label class="field__label" for="quality">Calidad JPEG · <output id="qualityValue">92</output></label>
+          <label class="field__label" for="quality">JPEG quality · <output id="qualityValue">92</output></label>
           <input id="quality" class="range" type="range" min="40" max="100" step="1" value="92" />
         </div>
 
         <label class="check">
           <input id="copyToggle" type="checkbox" />
-          <span>Copiar también al portapapeles</span>
+          <span>Also copy to clipboard</span>
         </label>
       </section>
 
       <section class="panel">
-        <h2>Comportamiento</h2>
+        <h2>Behavior</h2>
 
         <div class="field">
-          <span class="field__label">Método de captura</span>
-          <div id="modeGroup" class="segmented" role="group" aria-label="Método de captura">
-            <button type="button" class="seg" data-mode="auto">Automático</button>
-            <button type="button" class="seg" data-mode="fast">Rápido</button>
-            <button type="button" class="seg" data-mode="scroll">Por scroll</button>
+          <span class="field__label">Page walk method</span>
+          <div id="modeGroup" class="segmented" role="group" aria-label="Capture mode">
+            <button type="button" class="seg" data-mode="auto">Automatic</button>
+            <button type="button" class="seg" data-mode="fast">Fast</button>
+            <button type="button" class="seg" data-mode="scroll">Scroll</button>
             <button type="button" class="seg" data-mode="visible">Visible</button>
           </div>
           <span class="field__hint">
-            «Automático» decide solo. «Rápido» toma la página entera de una pasada. «Por scroll» recorre la vista paso a paso, para páginas cuyo contenido solo aparece al bajar (carga diferida, listas virtualizadas). Es más lento.
+            "Automatic" decides on its own. "Fast" takes the whole page in one pass. "Scroll" walks the view step by step, for pages whose content only appears on scroll (lazy loading, virtualized lists). Slower.
           </span>
         </div>
 
         <label class="check">
           <input id="lazyLoad" type="checkbox" />
           <span>
-            Recorrer la página antes de capturar
-            <em>Fuerza la carga de imágenes con carga diferida. Más lento, pero la captura sale completa.</em>
+            Walk the page before capturing
+            <em>Forces lazy-loaded images to load. Slower, but the capture comes out complete.</em>
           </span>
         </label>
 
         <label class="check">
           <input id="dismissCookies" type="checkbox" />
           <span>
-            Cerrar banners de cookies antes de capturar
-            <em>Intenta pulsar "Aceptar" en los consentimientos más comunes (OneTrust, Cookiebot, Didomi…).</em>
+            Dismiss cookie banners before capturing
+            <em>Tries to click "Accept" on common consent dialogs (OneTrust, Cookiebot, Didomi…).</em>
           </span>
         </label>
 
         <label class="check">
           <input id="followInfinite" type="checkbox" />
           <span>
-            Seguir el scroll infinito
-            <em>Captura mientras la página siga creciendo (feeds, listas que cargan más al bajar). Más lento.</em>
+            Follow infinite scroll
+            <em>Keeps capturing while the page keeps growing (feeds, lists that load more on scroll). Slower.</em>
           </span>
         </label>
 
         <label class="check">
           <input id="repaintCanvas" type="checkbox" />
           <span>
-            Repintar antes de capturar
-            <em>Mejora la captura de Canvas/WebGL y animaciones. Activado por defecto.</em>
+            Repaint before capturing
+            <em>Improves capture of Canvas/WebGL and animations. Enabled by default.</em>
           </span>
         </label>
 
         <div class="field">
-          <label class="field__label" for="captureDelay">Retardo antes de capturar · <output id="captureDelayValue">0</output> s</label>
+          <label class="field__label" for="captureDelay">Delay before capturing · <output id="captureDelayValue">0</output> s</label>
           <input id="captureDelay" class="range" type="range" min="0" max="10" step="1" value="0" />
-          <span class="field__hint">Útil para capturar menús desplegados o estados con hover.</span>
+          <span class="field__hint">Useful to capture open menus or hover states.</span>
         </div>
 
         <label class="check">
           <input id="notify" type="checkbox" />
-          <span>Avisarme con una notificación al terminar</span>
+          <span>Notify me with a notification when finished</span>
         </label>
       </section>
 
       <footer class="actions">
-        <button id="save" class="primary" type="button">Guardar cambios</button>
-        <button id="reset" class="ghost" type="button">Restaurar valores por defecto</button>
-        <span id="saved" class="saved">Guardado ✓</span>
+        <button id="save" class="primary" type="button">Save changes</button>
+        <button id="reset" class="ghost" type="button">Restore defaults</button>
+        <span id="saved" class="saved">Saved ✓</span>
       </footer>
     </main>
     <script type="module" src="options.js"></script>

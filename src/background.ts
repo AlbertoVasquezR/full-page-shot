@@ -183,7 +183,7 @@ async function runCapture(tabId: number, forceMode?: CaptureMode): Promise<Captu
   let clipboardMethod = "";
 
   if (settings.copyToClipboard) {
-    emitProgress("clipboard", 95, "Copiando al portapapeles");
+    emitProgress("clipboard", 95, "Copying to clipboard");
     try {
       const response = await copyToClipboard(output.base64, output.mimeType);
       clipboard = response.ok ? "ok" : "failed";
@@ -222,7 +222,7 @@ async function runCapture(tabId: number, forceMode?: CaptureMode): Promise<Captu
 
   const details = `${result.width} × ${result.height} px`;
   if (settings.notifyOnDone) {
-    await notify("Captura lista", `${result.displayName} · ${details}`, downloadId);
+    await notify("Capture ready", `${result.displayName} · ${details}`, downloadId);
   }
 
   // History of recent captures.
@@ -289,7 +289,7 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
 
   if (request.type === "CAPTURE") {
     if (busy) {
-      const response = { ok: false as const, message: "Ya hay una captura en curso.", hint: "Espera unos segundos." };
+      const response = { ok: false as const, message: "A capture is already running.", hint: "Wait a few seconds." };
       fail(response.message, response.hint);
       sendResponse(response);
       return true;
@@ -297,8 +297,8 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
     if (typeof request.tabId !== "number" || request.tabId < 0) {
       const response = {
         ok: false as const,
-        message: "No se pudo identificar la pestaña activa.",
-        hint: "Abre una página normal (http o https) y vuelve a intentarlo.",
+        message: "Could not identify the active tab.",
+        hint: "Open a normal page (http or https) and try again.",
       };
       fail(response.message, response.hint);
       sendResponse(response);
@@ -343,20 +343,20 @@ chrome.commands.onCommand.addListener((command) => {
         type: "basic",
         iconUrl: chrome.runtime.getURL("icons/icon128.png"),
         title: "Full Page Shot",
-        message: "Ya hay una captura en curso.",
+        message: "A capture is already running.",
       });
       return;
     }
     const tabId = tab.id;
     busy = true;
-    emitProgress("preparing", 2, "Iniciando captura por atajo…");
+    emitProgress("preparing", 2, "Starting capture from shortcut…");
     runCapture(tabId, forceMode)
       .then((result) => {
         emit({ target: "popup", type: "DONE", result });
         chrome.notifications.create({
           type: "basic",
           iconUrl: chrome.runtime.getURL("icons/icon128.png"),
-          title: "Captura lista",
+          title: "Capture ready",
           message: `${result.displayName} · ${result.width} × ${result.height} px`,
         }, (nid) => {
           if (nid) notificationDownloads.set(nid, result.downloadId);
@@ -370,7 +370,7 @@ chrome.commands.onCommand.addListener((command) => {
         chrome.notifications.create({
           type: "basic",
           iconUrl: chrome.runtime.getURL("icons/icon128.png"),
-          title: "Error en la captura",
+          title: "Capture error",
           message: `${message} ${hint}`.trim(),
         });
       })

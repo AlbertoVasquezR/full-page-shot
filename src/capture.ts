@@ -74,14 +74,14 @@ export function friendlyError(error: unknown): CaptureError {
 
   if (message.includes("another debugger")) {
     return new CaptureError(
-      "Ya hay un depurador conectado a esta pestaña.",
-      "Cierra las DevTools (F12) en esa pestaña y vuelve a intentarlo.",
+      "A debugger is already attached to this tab.",
+      "Close DevTools (F12) on that tab and try again.",
     );
   }
   if (message.includes("restricted by policy")) {
     return new CaptureError(
-      "La captura de pantalla está bloqueada por una política de tu organización.",
-      "Pídele al administrador que habilite la captura de pantalla en Edge.",
+      "Screenshot capture is blocked by your organization's policy.",
+      "Ask your administrator to enable screenshot capture in Edge.",
     );
   }
   if (
@@ -92,17 +92,17 @@ export function friendlyError(error: unknown): CaptureError {
     message.includes("extension://")
   ) {
     return new CaptureError(
-      "Edge no permite capturar esta página.",
-      "No funciona en páginas internas (edge://, chrome://), en la tienda de extensiones, en pestañas nuevas ni en archivos locales. Usa una página web normal (http o https).",
+      "Edge won't capture this page.",
+      "Doesn't work on internal pages (edge://, chrome://), the extensions store, new tabs or local files. Use a normal web page (http or https).",
     );
   }
   if (message.includes("no tab with id") || message.includes("no window with id")) {
     return new CaptureError(
-      "La pestaña ya no está disponible.",
-      "Vuelve a abrir la página que querías capturar e inténtalo otra vez.",
+      "The tab is no longer available.",
+      "Reopen the page you wanted to capture and try again.",
     );
   }
-  return new CaptureError("No se pudo completar la captura.", raw);
+  return new CaptureError("Could not complete the capture.", raw);
 }
 
 /** Recorre la pagina de arriba a abajo para disparar el lazy loading y vuelve al inicio. */
@@ -825,15 +825,15 @@ async function shoot(target: Debuggee, settings: Settings, clip: Clip): Promise<
   const response = await sendCommand<{ data?: string }>(target, "Page.captureScreenshot", params);
   if (!response?.data) {
     throw new CaptureError(
-      "Edge no devolvió la imagen.",
-      "La página puede ser demasiado grande o estar protegida contra capturas.",
+      "Edge didn't return the image.",
+      "The page may be too large or protected against captures.",
     );
   }
   return response.data;
 }
 
 /**
- * Fotografía lo que hay ahora mismo en pantalla (sin captureBeyondViewport).
+ * Photographs what is currently on screen (without captureBeyondViewport).
  * Se usa en el recorrido por scroll, que desplaza el contenedor principal antes
  * de capturar. Sirve tanto para paginas normales como para las que desplazan
  * un contenedor interno (html con overflow hidden y body/contenedor con scroll).
@@ -849,8 +849,8 @@ async function shootViewport(target: Debuggee, settings: Settings): Promise<stri
   const response = await sendCommand<{ data?: string }>(target, "Page.captureScreenshot", params);
   if (!response?.data) {
     throw new CaptureError(
-      "Edge no devolvió la imagen.",
-      "La página puede ser demasiado grande o estar protegida contra capturas.",
+      "Edge didn't return the image.",
+      "The page may be too large or protected against captures.",
     );
   }
   return response.data;
@@ -1005,7 +1005,7 @@ async function captureByScroll(
       height = newHeight;
       lastY = Math.max(0, height - step);
 
-      onProgress("capturing", 50, `Cargando más contenido (${guard})…`);
+      onProgress("capturing", 50, `Loading more content (${guard})…`);
       const hidden = await hideStickyElements(target);
       try {
         let y = oldHeight;
@@ -1083,7 +1083,7 @@ async function stitchSlices(
   const canvas = new OffscreenCanvas(canvasWidth, canvasHeight);
   const context = canvas.getContext("2d");
   if (!context) {
-    throw new CaptureError("No se pudo crear el lienzo para unir las partes de la imagen.");
+    throw new CaptureError("Could not create the canvas to stitch the image parts.");
   }
 
   if (settings.format === "jpeg") {
@@ -1135,7 +1135,7 @@ async function captureVisibleTabFallback(tabId: number, settings: Settings): Pro
     quality: settings.format === "jpeg" ? settings.quality : undefined,
   });
   const base64 = (dataUrl.split(",")[1] ?? "").trim();
-  if (!base64) throw new CaptureError("Edge no devolvió la imagen.");
+  if (!base64) throw new CaptureError("Edge didn't return the image.");
 
   const bitmap = await createImageBitmap(base64ToBlob(base64, mimeFor(settings)));
   const width = bitmap.width;
@@ -1159,7 +1159,7 @@ export async function captureFullPage(
   settings: Settings,
   onProgress: ProgressFn,
 ): Promise<CaptureOutput> {
-  onProgress("preparing", 3, "Conectando con la pestaña");
+  onProgress("preparing", 3, "Connecting to the tab");
 
   let target!: Debuggee;
   try {
@@ -1168,12 +1168,12 @@ export async function captureFullPage(
     const fe = friendlyError(error);
     // Restricted pages: attempt at least a visible-viewport capture.
     const restricted =
-      fe.hint.includes("páginas internas") ||
+      fe.hint.includes("internal pages") ||
       fe.message.includes("No se pudo completar") ||
       fe.message.includes("bloqueada");
     if (restricted) {
       try {
-        onProgress("preparing", 5, "Página restringida: capturando solo la vista visible");
+        onProgress("preparing", 5, "Restricted page: capturing visible viewport only");
         const fallback = await captureVisibleTabFallback(tabId, settings);
         return fallback;
       } catch {
@@ -1208,23 +1208,23 @@ export async function captureFullPage(
 
     let effectiveMode: CaptureMode = settings.captureMode;
     if (effectiveMode === "auto") {
-      onProgress("loading", 6, "Analizando la página");
+      onProgress("loading", 6, "Analyzing the page");
       const signals = await detectDynamicContent(target);
       effectiveMode = signals.scroll ? "scroll" : "fast";
       if (effectiveMode === "scroll") {
-        onProgress("loading", 8, "Página dinámica detectada: se usará el recorrido por scroll");
+        onProgress("loading", 8, "Dynamic page detected: will use scroll walk");
       }
     }
 
     // Visible-only capture: resolved here, without scrolling.
     if (effectiveMode === "visible") {
       if (settings.dismissCookieBanners) {
-        onProgress("loading", 6, "Cerrando banners de cookies");
+        onProgress("loading", 6, "Dismissing cookie banners");
         await dismissCookieBanners(target);
       }
       if (settings.captureDelay > 0) {
         for (let s = settings.captureDelay; s > 0; s -= 1) {
-          onProgress("loading", 6, `Capturando en ${s} s…`);
+          onProgress("loading", 6, `Capturing in ${s} s…`);
           await new Promise((r) => setTimeout(r, 1000));
         }
       }
@@ -1241,7 +1241,7 @@ export async function captureFullPage(
         const nested = await evaluate<boolean>(target, `(document.documentElement.scrollHeight <= document.documentElement.clientHeight + 1)`);
         if (nested === true) {
           effectiveMode = "scroll";
-          onProgress("loading", 8, "Contenido en contenedor desplazable: se usará el recorrido por scroll");
+          onProgress("loading", 8, "Content in scrollable container: will use scroll walk");
         }
       } catch {
         // Keep the current mode.
@@ -1249,33 +1249,33 @@ export async function captureFullPage(
     }
 
     if (settings.repaintCanvas) {
-      onProgress("loading", 7, "Repintando la página");
+      onProgress("loading", 7, "Repainting the page");
       await repaintPage(target);
     }
 
-    onProgress("loading", 7, "Preparando la página");
+    onProgress("loading", 7, "Preparing the page");
     await preparePage(target);
 
     if (settings.dismissCookieBanners) {
-      onProgress("loading", 6, "Cerrando banners de cookies");
+      onProgress("loading", 6, "Dismissing cookie banners");
       await dismissCookieBanners(target);
     }
 
     if (settings.captureDelay > 0) {
       for (let s = settings.captureDelay; s > 0; s -= 1) {
-        onProgress("loading", 6, `Capturando en ${s} s…`);
+        onProgress("loading", 6, `Capturing in ${s} s…`);
         await new Promise((r) => setTimeout(r, 1000));
       }
     }
 
     if (settings.lazyLoadPass && effectiveMode !== "scroll") {
-      onProgress("loading", 8, "Desplazando para cargar contenido diferido");
+      onProgress("loading", 8, "Scrolling to load deferred content");
       await runLazyLoadPass(target);
     }
 
     await waitForIframes(target);
 
-    onProgress("measuring", 22, "Midiendo el tamaño de la página");
+    onProgress("measuring", 22, "Measuring the page");
     const { width, height } = await measurePage(target);
 
     const { slices, downscaled: sliceDownscaled } =
@@ -1300,7 +1300,7 @@ export async function captureFullPage(
     }
 
     if (!base64) {
-      throw new CaptureError("La captura quedó vacía.", "Vuelve a intentarlo; si persiste, recarga la página.");
+      throw new CaptureError("The capture came out empty.", "Try again; if it persists, reload the page.");
     }
 
     return {
