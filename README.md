@@ -208,18 +208,22 @@ full-page-shot/
 
 Full Page Shot also ships an **MCP server** so AI agents (Claude Code, Cursor, etc.) can capture full pages programmatically, including the user's real logged-in sessions.
 
-```bash
-# 1. Build the extension (so dist/ exists)
-npm run build
+**Setup is one step** — register the server in your agent (Claude Code: `~/.claude.json`):
 
-# 2. Launch Chrome/Edge with the extension and remote debugging
-npm run agent:launch
-
-# 3. Register the MCP server in your agent (Claude Code: ~/.claude.json)
-#    { "mcpServers": { "full-page-shot": { "command": "node", "args": [".../mcp/server.mjs"] } } }
+```json
+{
+  "mcpServers": {
+    "full-page-shot": {
+      "command": "node",
+      "args": ["C:/path/to/full-page-shot/mcp/server.mjs"]
+    }
+  }
+}
 ```
 
-Tools exposed: `capture_full_page`, `capture_visible`, `list_tabs`, `navigate`. See [`mcp/README.md`](./mcp/README.md) for full setup.
+The server **auto-launches Chrome/Edge** with remote debugging on first use (no manual launch, no extension needed for the agent). Log in to whatever sites you need in that window; the session persists.
+
+Tools exposed: `capture_full_page`, `capture_visible`, `list_tabs`, `navigate`, `browser_status`. See [`mcp/README.md`](./mcp/README.md) for full setup.
 
 The capture engine mirrors the extension's (measure → scroll → capture → stitch), so agents get the same results. No native messaging, no registry, no Go — pure Node.js + puppeteer-core.
 
