@@ -128,6 +128,11 @@ After changing code, click **Reload** on `edge://extensions/`.
 full-page-shot/
 ├── assets/
 │   └── banner.svg          README banner
+├── mcp/                    MCP server for AI agents (stdio, JSON-RPC)
+│   ├── server.mjs          MCP server (capture_full_page, capture_visible, ...)
+│   ├── capture.mjs        capture engine (measure, scroll, stitch)
+│   ├── launch-chrome.mjs   launch Chrome with the extension + remote debugging
+│   └── README.md           agent setup instructions
 ├── public/                 static assets (copied as-is to dist/)
 │   ├── manifest.json       Manifest V3
 │   ├── popup.html/.css     button UI
@@ -196,6 +201,27 @@ full-page-shot/
 | Blank capture | Enable *Walk the page before capturing* in Options. |
 | Missing or repeated blocks | Switch the **walk** to *Scroll* (content that only appears on scroll). |
 | Changed the code and nothing happens | Click **Reload** on `edge://extensions/`. |
+
+---
+
+## 🤖 For AI agents (MCP)
+
+Full Page Shot also ships an **MCP server** so AI agents (Claude Code, Cursor, etc.) can capture full pages programmatically, including the user's real logged-in sessions.
+
+```bash
+# 1. Build the extension (so dist/ exists)
+npm run build
+
+# 2. Launch Chrome/Edge with the extension and remote debugging
+npm run agent:launch
+
+# 3. Register the MCP server in your agent (Claude Code: ~/.claude.json)
+#    { "mcpServers": { "full-page-shot": { "command": "node", "args": [".../mcp/server.mjs"] } } }
+```
+
+Tools exposed: `capture_full_page`, `capture_visible`, `list_tabs`, `navigate`. See [`mcp/README.md`](./mcp/README.md) for full setup.
+
+The capture engine mirrors the extension's (measure → scroll → capture → stitch), so agents get the same results. No native messaging, no registry, no Go — pure Node.js + puppeteer-core.
 
 ---
 

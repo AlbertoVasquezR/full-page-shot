@@ -10,7 +10,9 @@
     "dev": "node build.mjs --watch",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run build",
-    "package": "node tools/package.mjs"
+    "package": "node tools/package.mjs",
+    "agent:launch": "node mcp/launch-chrome.mjs",
+    "agent:serve": "node mcp/server.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.3.5",
