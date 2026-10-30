@@ -1,0 +1,47 @@
+# Full Page Shot
+
+> A Microsoft Edge extension and MCP server that captures entire web pages (full scroll, any length) as PNG/JPEG. Written in TypeScript, bundled with esbuild. Used by humans and AI agents.
+
+Full Page Shot captures full-page screenshots via the Chrome DevTools Protocol. It handles pages up to 65,000+ px, internal scroll containers, lazy loading, Canvas/WebGL, cookie banners, and more. It also ships an MCP server and CLI so AI agents can capture pages programmatically.
+
+## Quick start (humans)
+
+- Install: `npm run setup` (npm install + build)
+- Load `dist/` in Edge (`edge://extensions/` → Developer mode → Load unpacked)
+- Click the icon → Capture full page (or `Ctrl+Shift+S`)
+
+## Quick capture (agents)
+
+- CLI: `node tools/agent-capture.mjs <url>` → prints JSON with file path and dimensions
+- MCP: register the server (auto-detected via `.mcp.json`), then call `capture_full_page({ url })`
+- Auto-launches Chrome if not running
+
+## Key files
+
+- [README](README.md): full documentation
+- [AGENTS.md](AGENTS.md): detailed agent instructions
+- [mcp/README.md](mcp/README.md): MCP server setup
+- [CONTRIBUTING.md](CONTRIBUTING.md): contribution guide
+- [SECURITY.md](SECURITY.md): security policy
+- [LICENSE](LICENSE): MIT
+
+## Tools (MCP / CLI)
+
+- `capture_full_page(url, format?, quality?)` — captures entire page, returns base64 image
+- `capture_visible(url?, format?, quality?)` — captures visible viewport only
+- `list_tabs()` — lists open tabs
+- `navigate(tabId, url)` — navigates a tab
+- `browser_status()` — checks if Chrome is ready
+
+## Build & test
+
+- `npm run check` — typecheck + build
+- `node tools/smoke-test.mjs --include-segments` — 12 E2E scenarios
+- `node tools/verify-clipboard.mjs` — clipboard verification
+
+## Repository
+
+- GitHub: https://github.com/AlbertoVasquezR/full-page-shot
+- License: MIT
+- Language: TypeScript
+- Browser: Microsoft Edge (Chromium)
