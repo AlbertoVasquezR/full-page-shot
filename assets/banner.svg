@@ -36,7 +36,7 @@
 
   <!-- Title -->
   <text x="210" y="95" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="800" fill="#ffffff" letter-spacing="-1">Full Page Shot</text>
-  <text x="210" y="130" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="500" fill="#ffffff" fill-opacity="0.85">Captura toda la página, por larga que sea · Microsoft Edge · Manifest V3</text>
+  <text x="210" y="130" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="500" fill="#ffffff" fill-opacity="0.85">Capture the whole page, no matter how long · Microsoft Edge · Manifest V3</text>
 
   <!-- Badge-like pills -->
   <g transform="translate(210, 150)">
