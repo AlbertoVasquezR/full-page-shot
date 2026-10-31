@@ -153,3 +153,55 @@ export async function captureVisible(page, { format = "png", quality = 92 } = {}
   }, buf);
   return { base64: buf, mimeType: format === "jpeg" ? "image/jpeg" : "image/png", width: dims.width, height: dims.height, downscaled: false };
 }
+
+export async function extractText(page) {
+  return await page.evaluate(() => {
+    const title = document.title || "";
+    const url = location.href;
+    // Prefer main content area; fall back to body text.
+    const main = document.querySelector("main, article, [role='main'], #content, #main") || document.body;
+    const text = (main.innerText || "").replace(/\\s+/g, " ").trim();
+    const words = text ? text.split(/\\s+/).length : 0;
+    return { title, url, text: text.slice(0, 50000), wordCount: words, truncated: text.length > 50000 };
+  });
+}
+
+export async function pageInfo(page) {
+  const m = await measurePage(page);
+  return await page.evaluate((m) => {
+    const title = document.title || "";
+    const url = location.href;
+    const images = document.images.length;
+    const links = document.querySelectorAll("a[href]").length;
+    const buttons = document.querySelectorAll("button, [role='button'], input[type='submit']").length;
+    const inputs = document.querySelectorAll("input, textarea, select").length;
+    const iframes = document.querySelectorAll("iframe").length;
+    // detect scroll containers
+    let scrollContainers = 0;
+    document.querySelectorAll("*").forEach((n) => {
+      const cs = getComputedStyle(n);
+      if ((cs.overflowY === "auto" || cs.overflowY === "scroll") && n.scrollHeight > n.clientHeight + 50) scrollContainers++;
+    });
+    return { title, url, width: m.width, height: m.height, viewportHeight: m.viewportHeight, nestedScroller: m.nested, imageCount: images, linkCount: links, buttonCount: buttons, inputCount: inputs, iframeCount: iframes, scrollContainerCount: scrollContainers };
+  }, m);
+}
+
+export async function extractInteractive(page) {
+  return await page.evaluate(() => {
+    const links = Array.from(document.querySelectorAll("a[href]")).slice(0, 100).map((a) => ({
+      text: (a.textContent || "").trim().slice(0, 80),
+      href: a.getAttribute("href") || "",
+    })).filter((l) => l.text || l.href);
+    const buttons = Array.from(document.querySelectorAll("button, [role='button'], input[type='submit'], input[type='button']")).slice(0, 50).map((b) => ({
+      text: (b.textContent || b.value || "").trim().slice(0, 80),
+      type: b.getAttribute("type") || "button",
+    })).filter((b) => b.text);
+    const inputs = Array.from(document.querySelectorAll("input, textarea, select")).slice(0, 50).map((i) => ({
+      type: i.getAttribute("type") || i.tagName.toLowerCase(),
+      name: i.getAttribute("name") || "",
+      placeholder: i.getAttribute("placeholder") || "",
+      value: (i.value || "").slice(0, 40),
+    }));
+    return { links, buttons, inputs };
+  });
+}

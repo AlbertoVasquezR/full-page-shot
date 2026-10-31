@@ -4,13 +4,25 @@
 // Launch Chrome with:  chrome --remote-debugging-port=9222  (and load the extension if desired)
 
 import puppeteer from "puppeteer-core";
-import { captureFullPage, captureVisible } from "./capture.mjs";
+import { captureFullPage, captureVisible, extractText, pageInfo, extractInteractive } from "./capture.mjs";
 import readline from "node:readline";
 
 const DEBUG_PORT = Number(process.env.CHROME_DEBUG_PORT || 9222);
 const DOWNLOAD_DIR = process.env.DOWNLOAD_DIR || "";
 
 let browser = null;
+
+// Simple in-memory cache: avoids re-capturing the same URL within 5 minutes.
+const cache = new Map();
+const CACHE_TTL = 5 * 60 * 1000;
+function cacheKey(url, kind) { return kind + "::" + url; }
+function getCached(url, kind) {
+  const e = cache.get(cacheKey(url, kind));
+  if (!e) return null;
+  if (Date.now() - e.ts > CACHE_TTL) { cache.delete(cacheKey(url, kind)); return null; }
+  return e.value;
+}
+function setCached(url, kind, value) { cache.set(cacheKey(url, kind), { ts: Date.now(), value }); }
 
 async function findChrome() {
   const candidates = process.platform === "win32"
@@ -107,6 +119,28 @@ rl.on("line", async (line) => {
             tabId: { type: "number", description: "Chrome tab id to capture (optional)" },
             format: { type: "string", enum: ["png", "jpeg"], description: "Output format (default png)" },
             quality: { type: "number", description: "JPEG quality 1-100 (default 92)" },
+            returnImage: { type: "boolean", description: "Return the image (default true). Set false to get only metadata (saves tokens)." },
+          } },
+        },
+        {
+          name: "extract_text",
+          description: "Extract the text content of a page. Much cheaper in tokens than a screenshot — use this when you only need to read text.",
+          inputSchema: { type: "object", properties: {
+            url: { type: "string", description: "URL to navigate to (optional; uses active tab if omitted)" },
+          } },
+        },
+        {
+          name: "page_info",
+          description: "Get page metadata (title, URL, dimensions, counts of images/links/buttons/inputs) without capturing an image. Very cheap.",
+          inputSchema: { type: "object", properties: {
+            url: { type: "string", description: "URL to navigate to (optional; uses active tab if omitted)" },
+          } },
+        },
+        {
+          name: "extract_interactive",
+          description: "Extract interactive elements (links, buttons, inputs) with their text and selectors. Useful for navigation without a screenshot.",
+          inputSchema: { type: "object", properties: {
+            url: { type: "string", description: "URL to navigate to (optional; uses active tab if omitted)" },
           } },
         },
         {
@@ -116,6 +150,28 @@ rl.on("line", async (line) => {
             url: { type: "string", description: "URL to navigate to before capturing (optional)" },
             format: { type: "string", enum: ["png", "jpeg"] },
             quality: { type: "number" },
+            returnImage: { type: "boolean", description: "Return the image (default true). Set false for metadata only." },
+          } },
+        },
+        {
+          name: "extract_text",
+          description: "Extract the text content of a page. Much cheaper in tokens than a screenshot — use this when you only need to read text.",
+          inputSchema: { type: "object", properties: {
+            url: { type: "string", description: "URL to navigate to (optional; uses active tab if omitted)" },
+          } },
+        },
+        {
+          name: "page_info",
+          description: "Get page metadata (title, URL, dimensions, counts of images/links/buttons/inputs) without capturing an image. Very cheap.",
+          inputSchema: { type: "object", properties: {
+            url: { type: "string", description: "URL to navigate to (optional; uses active tab if omitted)" },
+          } },
+        },
+        {
+          name: "extract_interactive",
+          description: "Extract interactive elements (links, buttons, inputs) with their text and selectors. Useful for navigation without a screenshot.",
+          inputSchema: { type: "object", properties: {
+            url: { type: "string", description: "URL to navigate to (optional; uses active tab if omitted)" },
           } },
         },
         {
@@ -165,7 +221,79 @@ rl.on("line", async (line) => {
         }
         return;
       }
+      if (name === "extract_text") {
+        const b = await connect();
+        let page;
+        if (args.url) { page = await b.newPage(); await page.goto(args.url, { waitUntil: "networkidle2", timeout: 60000 }); }
+        else { page = await getActivePage(); }
+        const result = await extractText(page);
+        if (args.url) await page.close().catch(() => {});
+        send({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] } });
+        return;
+      }
+      if (name === "page_info") {
+        const b = await connect();
+        let page;
+        if (args.url) { page = await b.newPage(); await page.goto(args.url, { waitUntil: "networkidle2", timeout: 60000 }); }
+        else { page = await getActivePage(); }
+        const result = await pageInfo(page);
+        if (args.url) await page.close().catch(() => {});
+        send({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] } });
+        return;
+      }
+      if (name === "extract_interactive") {
+        const b = await connect();
+        let page;
+        if (args.url) { page = await b.newPage(); await page.goto(args.url, { waitUntil: "networkidle2", timeout: 60000 }); }
+        else { page = await getActivePage(); }
+        const result = await extractInteractive(page);
+        if (args.url) await page.close().catch(() => {});
+        send({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] } });
+        return;
+      }
+      if (name === "extract_text") {
+        const b = await connect();
+        let page;
+        if (args.url) { page = await b.newPage(); await page.goto(args.url, { waitUntil: "networkidle2", timeout: 60000 }); }
+        else { page = await getActivePage(); }
+        const result = await extractText(page);
+        if (args.url) await page.close().catch(() => {});
+        send({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] } });
+        return;
+      }
+      if (name === "page_info") {
+        const b = await connect();
+        let page;
+        if (args.url) { page = await b.newPage(); await page.goto(args.url, { waitUntil: "networkidle2", timeout: 60000 }); }
+        else { page = await getActivePage(); }
+        const result = await pageInfo(page);
+        if (args.url) await page.close().catch(() => {});
+        send({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] } });
+        return;
+      }
+      if (name === "extract_interactive") {
+        const b = await connect();
+        let page;
+        if (args.url) { page = await b.newPage(); await page.goto(args.url, { waitUntil: "networkidle2", timeout: 60000 }); }
+        else { page = await getActivePage(); }
+        const result = await extractInteractive(page);
+        if (args.url) await page.close().catch(() => {});
+        send({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] } });
+        return;
+      }
       if (name === "capture_full_page" || name === "capture_visible") {
+        const kind = name === "capture_full_page" ? "full" : "visible";
+        // cache hit?
+        if (args.url) {
+          const hit = getCached(args.url, kind);
+          if (hit) {
+            const content = [];
+            if (args.returnImage !== false) content.push({ type: "image", data: hit.base64, mimeType: hit.mimeType });
+            content.push({ type: "text", text: `Cached ${hit.width}x${hit.height} (no re-capture, tokens saved)` });
+            send({ jsonrpc: "2.0", id, result: { content } });
+            return;
+          }
+        }
         const b = await connect();
         let page;
         if (args.url) {
@@ -178,12 +306,14 @@ rl.on("line", async (line) => {
         const result = name === "capture_full_page"
           ? await captureFullPage(page, opts)
           : await captureVisible(page, opts);
-        // close the temporary page if we created one
         if (args.url) await page.close().catch(() => {});
-        send({ jsonrpc: "2.0", id, result: { content: [
-          { type: "image", data: result.base64, mimeType: result.mimeType },
-          { type: "text", text: `Captured ${result.width}x${result.height} (${result.downscaled ? "downscaled" : "full"})` },
-        ] } });
+        if (args.url) setCached(args.url, kind, result);
+        const content = [];
+        if (args.returnImage !== false) {
+          content.push({ type: "image", data: result.base64, mimeType: result.mimeType });
+        }
+        content.push({ type: "text", text: `Captured ${result.width}x${result.height} (${result.downscaled ? "downscaled" : "full"})` });
+        send({ jsonrpc: "2.0", id, result: { content } });
         return;
       }
       send({ jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown tool: ${name}` } });

@@ -5,8 +5,9 @@
 > To capture a page: `node tools/agent-capture.mjs <url>` → returns JSON with the saved file path.
 > Or use the MCP server for inline base64 images. No setup beyond `npm install`.
 >
-> **Token savings:** capturing a full page costs the agent **zero tokens** for screenshotting.
-> The tool does the scrolling, stitching and encoding; you only spend tokens understanding the image.
+> **Token savings:** capturing a long page with computer-use costs dozens of calls and thousands of
+> orchestration tokens. This tool does it in a single call and returns the ready image — you only
+> spend tokens understanding it, not producing it.
 
 ---
 

@@ -251,7 +251,7 @@ node tools/agent-capture.mjs https://example.com
 
 The capture engine mirrors the extension's (measure → scroll → capture → stitch), so agents get the same results. No native messaging, no registry, no Go — pure Node.js + puppeteer-core.
 
-**Why agents love it:** capturing a full page costs the agent **zero tokens** for screenshotting — the extension/MCP does the heavy lifting (scrolling, stitching, encoding) and returns the final image. The agent only spends tokens on understanding the image, not on producing it.
+**Why agents love it:** capturing a long page with computer-use costs dozens of calls and thousands of orchestration tokens. This tool does it in a single call and returns the ready image — the agent only spends tokens understanding it, not producing it.
 
 ---
 
