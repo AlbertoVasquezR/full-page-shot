@@ -255,6 +255,13 @@ node tools/agent-capture.mjs https://example.com
 # → {"ok":true,"file":".../capture.png","width":1280,"height":800,...}
 ```
 
+**Token-saving tools (agents save ~100x tokens vs. vision):**
+- `extract_text` — read page text (text is ~100x cheaper than a screenshot)
+- `page_info` — metadata only, no image (dimensions, counts)
+- `extract_interactive` — links, buttons, inputs without a screenshot
+- `capture_full_page` with `returnImage: false` — metadata only
+- Results cached 5 min by URL (repeated captures are free)
+
 The capture engine mirrors the extension's (measure → scroll → capture → stitch), so agents get the same results. No native messaging, no registry, no Go — pure Node.js + puppeteer-core.
 
 **Why agents love it:** capturing a long page with computer-use costs dozens of calls and thousands of orchestration tokens. This tool does it in a single call and returns the ready image — the agent only spends tokens understanding it, not producing it.
