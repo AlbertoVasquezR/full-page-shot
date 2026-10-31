@@ -61,15 +61,36 @@ The server **auto-launches Chrome** on first use. No manual steps.
 #### `capture_full_page`
 Capture an entire page (full scroll height).
 ```json
-{ "url": "https://example.com", "format": "png", "quality": 92 }
+{ "url": "https://example.com", "format": "png", "quality": 92, "returnImage": true }
 ```
-Returns: `{ content: [{ type: "image", data: "<base64>", mimeType: "image/png" }, { type: "text", text: "Captured WxH (full)" }] }`
+Returns: image (base64) + text metadata. Set `returnImage: false` to skip the image (saves tokens).
 
 #### `capture_visible`
 Capture only the visible viewport.
 ```json
 { "url": "https://example.com", "format": "png" }
 ```
+
+#### `extract_text` ⭐ (cheapest)
+Extract the page's text content. Use this instead of a screenshot when you only need to read text.
+```json
+{ "url": "https://example.com" }
+```
+Returns: `{ title, url, text (up to 50k chars), wordCount, truncated }`
+
+#### `page_info` ⭐ (cheapest)
+Get page metadata without any image.
+```json
+{ "url": "https://example.com" }
+```
+Returns: `{ title, url, width, height, viewportHeight, imageCount, linkCount, buttonCount, inputCount, iframeCount, scrollContainerCount }`
+
+#### `extract_interactive` ⭐
+Extract interactive elements (links, buttons, inputs) with text and selectors.
+```json
+{ "url": "https://example.com" }
+```
+Returns: `{ links: [{text, href}], buttons: [{text, type}], inputs: [{type, name, placeholder, value}] }`
 
 #### `list_tabs`
 List open tabs. Returns JSON array of `{ index, url, title }`.
@@ -82,6 +103,14 @@ Navigate a tab to a URL.
 
 #### `browser_status`
 Check if Chrome is connected. Auto-launches if needed. Returns `{ connected: bool, version: "..." }`.
+
+### Token-saving strategy
+
+1. **Need to read text?** → `extract_text` (text is ~100x cheaper than vision tokens)
+2. **Need page structure?** → `page_info` or `extract_interactive` (no image at all)
+3. **Need to see the page?** → `capture_full_page` with `returnImage: true`
+4. **Already captured?** → Results are cached for 5 minutes by URL (free)
+5. **Quick check?** → `capture_full_page` with `returnImage: false` (metadata only)
 
 ## How capture works
 

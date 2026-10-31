@@ -241,7 +241,13 @@ Full Page Shot also ships an **MCP server** so AI agents (Claude Code, Cursor, e
 
 The server **auto-launches Chrome/Edge** with remote debugging on first use (no manual launch, no extension needed for the agent). Log in to whatever sites you need in that window; the session persists.
 
-Tools exposed: `capture_full_page`, `capture_visible`, `list_tabs`, `navigate`, `browser_status`. See [`mcp/README.md`](./mcp/README.md) and [`AGENTS.md`](./AGENTS.md) for full setup.
+Tools exposed: `capture_full_page`, `capture_visible`, `extract_text`, `page_info`, `extract_interactive`, `list_tabs`, `navigate`, `browser_status`. See [`mcp/README.md`](./mcp/README.md) and [`AGENTS.md`](./AGENTS.md) for full setup.
+
+**Token-saving tips for agents:**
+- Use `extract_text` instead of a screenshot when you only need to read content (text is ~100x cheaper in tokens than vision).
+- Use `page_info` for quick checks without any image.
+- Use `returnImage: false` on capture tools to get only metadata.
+- Results are cached for 5 minutes by URL — repeated captures of the same page are free.
 
 **Even simpler — one-shot CLI (no MCP setup needed):**
 ```bash
