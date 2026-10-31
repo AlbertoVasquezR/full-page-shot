@@ -1,9 +1,12 @@
 # AGENTS.md — Full Page Shot
 
 > **TL;DR for AI agents:** This repo contains a browser extension AND a self-contained MCP server + CLI
-> that let you capture full-page screenshots of any URL (including logged-in pages). 
+> that let you capture full-page screenshots of any URL (including logged-in pages).
 > To capture a page: `node tools/agent-capture.mjs <url>` → returns JSON with the saved file path.
 > Or use the MCP server for inline base64 images. No setup beyond `npm install`.
+>
+> **Token savings:** capturing a full page costs the agent **zero tokens** for screenshotting.
+> The tool does the scrolling, stitching and encoding; you only spend tokens understanding the image.
 
 ---
 

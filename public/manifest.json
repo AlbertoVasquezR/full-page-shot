@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Full Page Shot",
   "version": "1.0.0",
-  "description": "Full-page capture for Microsoft Edge: PNG or JPEG of the whole page, clipboard and destination folder.",
+  "description": "Full-page capture for Microsoft Edge: PNG/JPEG of the whole page, clipboard and folder. MCP server lets AI agents capture pages without spending tokens. https://albertovasquezr.github.io/full-page-shot/",
   "minimum_chrome_version": "116",
   "icons": {
     "16": "icons/icon16.png",
