@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Package
+        run: |
+          cd dist
+          zip -r ../full-page-shot-${{ github.ref_name }}.zip .
+          cd ..
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: full-page-shot-${{ github.ref_name }}.zip
+          generate_release_notes: true
+          body: |
+            ## Installation (no Node.js needed)
+            1. Download the zip below.
+            2. Extract to a folder.
+            3. Edge → `edge://extensions/` → Developer mode → Load unpacked → select the folder.
+
+            ## For developers
+            Clone the repo and run `npm install && npm run build`. See README for details.

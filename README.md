@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/AlbertoVasquezR/full-page-shot"><img src="https://img.shields.io/github/stars/AlbertoVasquezR/full-page-shot?style=social" alt="GitHub stars"/></a>
+  <a href="https://github.com/AlbertoVasquezR/full-page-shot/actions/workflows/ci.yml"><img src="https://github.com/AlbertoVasquezR/full-page-shot/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
   <a href="https://github.com/AlbertoVasquezR/full-page-shot/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-047857?style=flat-square" alt="MIT License"/></a>
   <img src="https://img.shields.io/badge/Manifest-V3-4f46e5?style=flat-square" alt="Manifest V3"/>
   <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript"/>
@@ -72,6 +73,20 @@ Chromium **only** supports copying an image from code through the asynchronous C
 2. If you close the popup before it finishes, the extension opens a **tiny focused helper window** that copies and closes itself.
 
 An *offscreen* document is useless here: it can never gain focus, and the old `document.execCommand("copy")` only leaves text and HTML on the clipboard, not an image. (See chromium/issues/40252021 and 40288517.)
+
+---
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="assets/screenshots/popup-idle.png" alt="Popup UI" width="280"/>
+  &nbsp;&nbsp;
+  <img src="assets/screenshots/options.png" alt="Options page" width="280"/>
+</p>
+
+<p align="center">
+  <sub>Popup with format, mode and clipboard options · Options page with all settings</sub>
+</p>
 
 ---
 
@@ -300,6 +315,16 @@ Contributions are welcome! To improve Full Page Shot:
 - Tests for new capture paths.
 
 Questions or suggestions? Open an **issue** in the repository.
+
+---
+
+## ⭐ Star History
+
+<p align="center">
+  <a href="https://star-history.com/#AlbertoVasquezR/full-page-shot&Date">
+    <img src="https://api.star-history.com/svg?repos=AlbertoVasquezR/full-page-shot&type=Date" alt="Star History Chart" width="600"/>
+  </a>
+</p>
 
 ---
 
